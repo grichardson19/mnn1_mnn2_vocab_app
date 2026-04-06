@@ -138,6 +138,12 @@ input[type=file]{display:none}
 .complete-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 #listSearch:focus{border-color:var(--accent2)}
 #listSearch::placeholder{color:var(--muted)}
+.syntax-example{border:1px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;transition:all .15s;background:var(--paper)}
+.syntax-example:hover{border-color:var(--accent2);background:#f2f7f5}
+.syntax-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.syntax-code{display:block;font-family:'Noto Serif JP',monospace;font-size:12px;color:var(--ink);white-space:pre;line-height:1.7}
+.syntax-tap{font-size:10px;color:var(--accent2);margin-top:4px;display:none}
+.syntax-example:hover .syntax-tap{display:block}
 .tag-editor{background:var(--hover);border-radius:9px;padding:12px;margin-top:8px;width:100%;border:1px solid var(--border)}
 .tag-editor-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .tag-editor-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);min-width:60px}
@@ -171,6 +177,26 @@ input[type=file]{display:none}
     <div class="card">
       <div class="section-label">Paste vocab or grammar</div>
       <textarea id="pasteInput" rows="4" placeholder="Paste a word list, grammar patterns, or anything Japanese here."></textarea>
+      <div style="margin-top:10px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;font-weight:500">Example formats</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="syntax-example" onclick="useSyntaxExample(this)">
+            <div class="syntax-label">Pipe separated</div>
+            <code class="syntax-code">食べます | たべます | eat | L6
+飲みます | のみます | drink | L6</code>
+          </div>
+          <div class="syntax-example" onclick="useSyntaxExample(this)">
+            <div class="syntax-label">Simple list</div>
+            <code class="syntax-code">食べます - eat
+飲みます - drink
+大学 - university</code>
+          </div>
+          <div class="syntax-example" onclick="useSyntaxExample(this)">
+            <div class="syntax-label">Natural text</div>
+            <code class="syntax-code">食べます (tabemasu) means "to eat". 飲みます means "to drink".</code>
+          </div>
+        </div>
+      </div>
       <div class="section-label" style="margin-top:14px">Or upload a file</div>
       <div class="upload-grid">
         <button class="upload-btn" onclick="document.getElementById('csvFile').click()"><span class="upload-icon">📄</span>CSV / TXT</button>
@@ -2118,6 +2144,13 @@ function renderStats() {
 }
 
 // ── INPUT PROCESSING ────────────────────────────────────────────────────────
+function useSyntaxExample(el) {
+  var code = el.querySelector('.syntax-code');
+  if (!code) return;
+  document.getElementById('pasteInput').value = code.textContent;
+  document.getElementById('pasteInput').focus();
+}
+
 function setStatus(msg, isErr) {
   var el = document.getElementById('inputStatus');
   el.style.display = '';
