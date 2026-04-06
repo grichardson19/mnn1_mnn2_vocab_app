@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MNN1 &amp; MNN2 Vocab Study App</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1a2e;--paper:#faf8f3;--accent:#c8433a;--accent2:#4a7c6f;
+  --muted:#8a8680;--card:#ffffff;--border:#e8e4dc;--hover:#f0ede6;
+  --font-jp:'Noto Serif JP',serif;--font-ui:'DM Sans',sans-serif
+}
+body{font-family:var(--font-ui);background:var(--paper);color:var(--ink);min-height:100vh}
+.app{max-width:680px;margin:0 auto;padding:16px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 20px}
+.logo{font-family:var(--font-jp);font-size:20px;letter-spacing:2px}
+.logo span{color:var(--accent);font-size:13px;font-family:var(--font-ui);letter-spacing:0;margin-left:8px;font-weight:300}
+.tabs{display:flex;gap:4px;background:var(--border);border-radius:10px;padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:8px;border:none;background:none;border-radius:7px;cursor:pointer;font-family:var(--font-ui);font-size:13px;color:var(--muted);font-weight:400;transition:all .2s}
+.tab.active{background:var(--card);color:var(--ink);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px}
+.section-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;font-weight:500}
+textarea{width:100%;border:1px solid var(--border);border-radius:9px;padding:12px;font-family:var(--font-ui);font-size:14px;resize:vertical;background:var(--paper);color:var(--ink);outline:none;transition:border .2s}
+textarea:focus{border-color:var(--accent2)}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.upload-btn{padding:12px 8px;border:1.5px dashed var(--border);border-radius:9px;background:none;cursor:pointer;font-family:var(--font-ui);font-size:12px;color:var(--muted);transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.upload-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+.upload-icon{font-size:20px}
+.btn{padding:10px 20px;border-radius:9px;border:none;cursor:pointer;font-family:var(--font-ui);font-size:14px;font-weight:500;transition:all .2s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.88}.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-secondary{background:var(--hover);color:var(--ink)}.btn-secondary:hover{background:var(--border)}
+.action-row{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.pdf-progress-box{border:1px solid var(--border);border-radius:9px;padding:14px;margin-top:10px;display:none}
+.pdf-bar-wrap{height:6px;background:var(--border);border-radius:3px;margin:8px 0;overflow:hidden}
+.pdf-bar{height:100%;background:var(--accent2);border-radius:3px;transition:width .4s}
+.pdf-log{font-size:12px;color:var(--muted);max-height:80px;overflow-y:auto;line-height:1.7;white-space:pre-wrap}
+.pdf-controls{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.pdf-range-label{font-size:12px;color:var(--muted)}
+.pdf-range-input{width:52px;border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:13px;font-family:var(--font-ui);background:var(--paper);color:var(--ink)}
+.word-list{display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto}
+.word-item{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--border);border-radius:9px;background:var(--card);position:relative;flex-wrap:wrap}
+.word-jp{font-family:var(--font-jp);font-size:17px;min-width:70px}
+.word-reading{font-size:12px;color:var(--muted);min-width:55px}
+.word-en{font-size:13px;flex:1;min-width:80px}
+.word-lesson{font-size:10px;padding:2px 6px;border-radius:10px;background:var(--hover);color:var(--muted);white-space:nowrap}
+.srs-badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;white-space:nowrap}
+.srs-0{background:#f3f0e8;color:var(--muted)}.srs-1{background:#fff3e0;color:#b06000}
+.srs-2{background:#e8f5e9;color:#2e7d32}.srs-3{background:#e3f2fd;color:#1565c0}
+.word-delete{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--border);font-size:16px;opacity:0;transition:opacity .2s}
+.word-item:hover .word-delete{opacity:1}
+.empty-state{text-align:center;padding:32px;color:var(--muted);font-size:14px}
+.filter-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.f-btn{padding:4px 10px;border-radius:16px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:11px;font-family:var(--font-ui);color:var(--muted);transition:all .15s;font-weight:500}
+.f-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ql-btn{padding:4px 9px;border-radius:14px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:11px;font-family:var(--font-ui);color:var(--muted);transition:all .15s}
+.ql-btn.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.type-btn{padding:5px 13px;border-radius:20px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:12px;font-family:var(--font-ui);font-weight:500;color:var(--muted);transition:all .15s}
+.type-btn.t-verb{}.type-btn.t-iadj{}.type-btn.t-nadj{}.type-btn.t-noun{}.type-btn.t-other{}
+.type-btn.active.t-verb{background:#e8f4fd;color:#1565c0;border-color:#1565c0}
+.type-btn.active.t-iadj{background:#f3e8fd;color:#6a1b9a;border-color:#6a1b9a}
+.type-btn.active.t-nadj{background:#fce8fd;color:#880e4f;border-color:#880e4f}
+.type-btn.active.t-noun{background:#e8f5e9;color:#2e7d32;border-color:#2e7d32}
+.type-btn.active.t-other{background:#fff8e1;color:#f57f17;border-color:#f57f17}
+.shortcut-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.quiz-type-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.quiz-type-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:13px;font-family:var(--font-ui);color:var(--muted);transition:all .2s}
+.quiz-type-btn.active{border-color:var(--accent);color:var(--accent);background:#fef5f5}
+.deck-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.deck-status{font-size:12px;color:var(--muted)}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent2);border-radius:2px;transition:width .5s}
+.quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.quiz-counter{font-size:13px;color:var(--muted);font-weight:500}
+.score-row{display:flex;gap:8px}
+.score-pill{display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.score-wrong{background:#fdecea;color:#c62828}.score-right{background:#e8f5e9;color:#2e7d32}
+.q-label{font-size:13px;color:var(--muted);margin-bottom:8px}
+.q-kanji{font-family:var(--font-jp);font-size:42px;text-align:center;padding:12px 0;line-height:1.3}
+.q-en{font-size:22px;text-align:center;padding:12px 0}
+.mc-options{display:flex;flex-direction:column;gap:10px}
+.mc-opt{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--card);font-family:var(--font-ui);font-size:14px;text-align:left;width:100%;transition:border-color .15s,background .15s}
+.mc-opt:hover:not(.locked){border-color:var(--accent2);background:#f2f7f5}
+.mc-opt.correct{border-color:#43a047;background:#e8f5e9}
+.mc-opt.wrong{border-color:#e53935;background:#fdecea}
+.mc-opt.locked{cursor:default}
+.mc-letter{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--muted);flex-shrink:0;transition:all .2s}
+.mc-opt.correct .mc-letter{background:#43a047;border-color:#43a047;color:#fff}
+.mc-opt.wrong   .mc-letter{background:#e53935;border-color:#e53935;color:#fff}
+.mc-text{flex:1;line-height:1.4}
+.mc-check{font-size:16px;margin-left:auto;opacity:0}
+.mc-opt.correct .mc-check,.mc-opt.wrong .mc-check{opacity:1}
+.expl{margin-top:14px;padding:12px 16px;background:#f5f9f7;border-left:3px solid var(--accent2);border-radius:0 9px 9px 0;font-size:13px;color:#2d5a4a;line-height:1.6;display:none}
+.expl.show{display:block;animation:fadeIn .3s}
+.expl .ok{font-weight:500;color:#2e7d32;margin-bottom:4px}
+.expl .no{font-weight:500;color:#c62828;margin-bottom:4px}
+.hint-row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.hint-toggle{background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:var(--font-ui)}
+.hint-toggle:hover{color:var(--ink)}
+.hint-text{font-family:var(--font-jp);font-size:17px;color:var(--accent2);display:none}
+.hint-text.show{display:block}
+.next-btn{margin-top:16px;width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:var(--font-ui);font-size:15px;font-weight:500;cursor:pointer;display:none}
+.next-btn:hover{opacity:.88}
+.next-btn.show{display:block;animation:fadeIn .3s}
+.dont-know-btn{font-size:12px;padding:6px 14px}
+.fillin-sentence{font-size:18px;line-height:2;font-family:var(--font-jp);margin:12px 0}
+.fillin-input{border:none;border-bottom:2px solid var(--accent);background:none;font-size:18px;font-family:var(--font-jp);color:var(--ink);outline:none;width:90px;text-align:center}
+.fillin-fb{font-size:14px;margin-top:10px;padding:10px 14px;border-radius:8px}
+.fillin-ok{background:#e8f5e9;color:#2e7d32}
+.fillin-ng{background:#fdecea;color:#c62828}
+.flashcard{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;text-align:center;gap:6px;padding:20px}
+.fc-front{font-family:var(--font-jp);font-size:44px;line-height:1.2}
+.fc-reading{font-size:15px;color:var(--muted)}
+.fc-hint{font-size:12px;color:var(--border);margin-top:6px}
+.fc-back{font-size:24px;color:var(--accent2);font-weight:500;animation:fadeIn .3s}
+.srs-row{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.srs-btn{padding:9px 18px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-family:var(--font-ui);font-weight:500}
+.srs-again{background:#fdecea;color:#c62828}.srs-hard{background:#fff8e1;color:#f57f17}
+.srs-good{background:#e8f5e9;color:#2e7d32}.srs-easy{background:#e3f2fd;color:#1565c0}
+.grammar-q{font-family:var(--font-jp);font-size:20px;line-height:1.7;text-align:center;padding:10px 0 14px;border-bottom:1px solid var(--border);margin-bottom:14px}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.stat-box{background:var(--hover);border-radius:9px;padding:14px;text-align:center}
+.stat-num{font-size:28px;font-weight:300;color:var(--accent)}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.ai-thinking{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:10px 0}
+.dot-pulse span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);margin:0 2px;animation:pulse 1.2s infinite}
+.dot-pulse span:nth-child(2){animation-delay:.2s}.dot-pulse span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.status-msg{font-size:13px;padding:6px 0}
+.status-ok{color:var(--accent2)}.status-err{color:var(--accent)}
+input[type=file]{display:none}
+.complete-screen{text-align:center;padding:24px 8px}
+.complete-icon{font-size:36px;margin-bottom:8px}
+.complete-title{font-size:18px;font-weight:500;margin-bottom:6px}
+.complete-sub{font-size:14px;color:var(--muted);margin-bottom:20px}
+.complete-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+#listSearch:focus{border-color:var(--accent2)}
+#listSearch::placeholder{color:var(--muted)}
+.tag-editor{background:var(--hover);border-radius:9px;padding:12px;margin-top:8px;width:100%;border:1px solid var(--border)}
+.tag-editor-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.tag-editor-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);min-width:60px}
+.tag-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:14px;font-size:11px;background:var(--card);border:1px solid var(--border);cursor:pointer;font-family:var(--font-ui)}
+.tag-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag-chip .x{opacity:.5;font-size:10px;margin-left:2px}
+.tag-chip .x:hover{opacity:1}
+.word-item.editing{background:#f9f7f2}
+.word-item-top{display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap}
+.edit-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--border);padding:2px 4px;margin-left:auto}
+.edit-btn:hover{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">語彙帳 <span>MNN1 &amp; MNN2 Vocab Study</span></div>
+    <div id="cardCount" style="font-size:12px;color:var(--muted)">0 cards</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('input')">Add Words</button>
+    <button class="tab" onclick="showTab('list')">My List</button>
+    <button class="tab" onclick="showTab('quiz')">Study</button>
+    <button class="tab" onclick="showTab('stats')">Progress</button>
+    <button class="tab" onclick="showTab('settings')" style="flex:0;padding:8px 11px">&#x2699;&#xFE0F;</button>
+  </div>
+
+  <!-- ── ADD WORDS ── -->
+  <div id="tab-input">
+    <div class="card">
+      <div class="section-label">Paste vocab or grammar</div>
+      <textarea id="pasteInput" rows="4" placeholder="Paste a word list, grammar patterns, or anything Japanese here."></textarea>
+      <div class="section-label" style="margin-top:14px">Or upload a file</div>
+      <div class="upload-grid">
+        <button class="upload-btn" onclick="document.getElementById('csvFile').click()"><span class="upload-icon">📄</span>CSV / TXT</button>
+        <button class="upload-btn" onclick="document.getElementById('imgFile').click()"><span class="upload-icon">📷</span>Photo</button>
+        <button class="upload-btn" onclick="document.getElementById('pdfFile').click()"><span class="upload-icon">📕</span>PDF</button>
+      </div>
+      <input type="file" id="csvFile" accept=".csv,.txt" onchange="handleCSV(event)">
+      <input type="file" id="imgFile" accept="image/*" onchange="handleImage(event)">
+      <input type="file" id="pdfFile" accept=".pdf,application/pdf" onchange="handlePDF(event)">
+      <div class="pdf-progress-box" id="pdfBox">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;font-weight:500" id="pdfFileName">PDF</span>
+          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="pdfStop=true">Stop</button>
+        </div>
+        <div class="pdf-controls">
+          <span class="pdf-range-label">Pages:</span>
+          <input type="number" class="pdf-range-input" id="pdfFrom" value="1" min="1">
+          <span class="pdf-range-label">to</span>
+          <input type="number" class="pdf-range-input" id="pdfTo" min="1">
+          <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="startPDF()">Extract pages</button>
+        </div>
+        <div class="pdf-bar-wrap"><div class="pdf-bar" id="pdfBar" style="width:0%"></div></div>
+        <div class="pdf-log" id="pdfLog"></div>
+      </div>
+      <div id="inputStatus" class="status-msg" style="display:none"></div>
+      <div class="action-row">
+        <button class="btn btn-secondary" onclick="document.getElementById('pasteInput').value='';document.getElementById('inputStatus').style.display='none'">Clear</button>
+        <button class="btn btn-primary" id="processBtn" onclick="processInput()">Extract &amp; Add Cards →</button>
+      </div>
+    </div>
+    <div class="card" style="font-size:13px;color:var(--muted);line-height:1.9">
+      <b style="color:var(--ink)">MNN1 &amp; MNN2 fully loaded</b> — all 50 lessons pre-loaded!<br>
+      Upload a PDF to extract more vocab • Any paste format works
+    </div>
+  </div>
+
+  <!-- ── MY LIST ── -->
+  <div id="tab-list" style="display:none">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <div class="section-label" style="margin:0;flex:1">Saved cards</div>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="exportCSV()">&#x2B07; Export</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="document.getElementById('importFile').click()">&#x2B06; Import</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" id="gsBtn" onclick="openGoogleSheets()">&#x1F4C4; Sheets</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="if(confirm('Delete all cards?')){cards=[];saveCards();renderList()}">Clear all</button>
+      </div>
+      <input type="file" id="importFile" accept=".csv,.tsv" onchange="importCSV(event)" style="display:none">
+      <div style="position:relative;margin-bottom:10px">
+        <input id="listSearch" type="text" placeholder="&#x1F50D; Search words (JP or EN)…"
+          style="width:100%;border:1px solid var(--border);border-radius:9px;padding:9px 36px 9px 14px;font-size:14px;font-family:var(--font-ui);background:var(--paper);color:var(--ink);outline:none"
+          oninput="listSearchVal=this.value;renderList()">
+        <button onclick="listSearchVal='';document.getElementById('listSearch').value='';renderList()"
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted)">&#x2715;</button>
+      </div>
+      <div id="gsSyncRow" style="display:none;background:#e8f5e9;border-radius:9px;padding:10px 14px;margin-bottom:10px;font-size:13px;align-items:center;gap:8px">
+        <span style="flex:1;color:#2e7d32">&#x2713; Linked to Google Sheets</span>
+        <button class="btn btn-primary" style="font-size:11px;padding:5px 12px;background:#2e7d32" onclick="syncToSheets()">Sync now</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="unlinkSheets()">Unlink</button>
+      </div>
+      <div class="filter-row" id="listLessonFilters"></div>
+      <div class="filter-row" id="listTypeFilters"></div>
+      <div class="filter-row" id="listCustomTagFilters" style="display:none"></div>
+      <div class="filter-row" style="margin-bottom:4px">
+        <button class="f-btn" id="listWeakBtn" onclick="toggleListWeak(this)">⚡ Weak only</button>
+      </div>
+      <div class="word-list" id="wordList"><div class="empty-state">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- ── STUDY ── -->
+  <div id="tab-quiz" style="display:none">
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div class="section-label" style="margin-bottom:6px">Lessons</div>
+      <div class="filter-row" id="quizLessonFilters"></div>
+      <div class="shortcut-row">
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 11px" onclick="selectAllLessons()">All</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 11px" onclick="selectMNN1()">MNN1 L1–25</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 11px" onclick="selectMNN2()">MNN2 L26–50</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 11px" onclick="clearLessons()">None</button>
+        <button class="btn" id="weakBtn" style="font-size:11px;padding:5px 11px;background:var(--hover);color:var(--muted)" onclick="toggleWeakFilter(this)">⚡ Weak only</button>
+      </div>
+    </div>
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div class="section-label" style="margin-bottom:6px">Word type</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="type-btn t-verb active"  onclick="toggleType('verb',this)">Verbs</button>
+        <button class="type-btn t-iadj active"  onclick="toggleType('i-adj',this)">い-adj</button>
+        <button class="type-btn t-nadj active"  onclick="toggleType('na-adj',this)">な-adj</button>
+        <button class="type-btn t-noun active"  onclick="toggleType('noun',this)">Nouns</button>
+        <button class="type-btn t-other active" onclick="toggleType('other',this)">Etc.</button>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="section-label">Quiz mode</div>
+      <div class="quiz-type-row">
+        <button class="quiz-type-btn active" onclick="setQuizType('mc-jp-en',this)">JP → EN</button>
+        <button class="quiz-type-btn" onclick="setQuizType('mc-en-jp',this)">EN → JP</button>
+        <button class="quiz-type-btn" onclick="setQuizType('fillin',this)">Fill in blank</button>
+        <button class="quiz-type-btn" onclick="setQuizType('grammar',this)">Grammar</button>
+        <button class="quiz-type-btn" onclick="setQuizType('flashcard',this)">Flashcard</button>
+      </div>
+    </div>
+    <div id="qLimitRow" style="display:none;align-items:center;gap:10px;margin-bottom:12px;padding:10px 14px;background:var(--hover);border-radius:9px">
+      <span style="font-size:13px;color:var(--muted)">Questions per session:</span>
+      <input type="number" id="qLimitInput" min="1" max="99" value="10"
+        style="width:52px;border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:14px;font-family:var(--font-ui);background:var(--card);color:var(--ink);text-align:center"
+        onchange="questionLimit=Math.max(1,parseInt(this.value)||10)">
+      <span style="font-size:12px;color:var(--muted)">(0 = unlimited)</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:12px;color:var(--muted)">Show terms as:</span>
+      <div style="display:flex;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden">
+        <button id="btnKanji" class="btn" style="font-size:12px;padding:5px 14px;border-radius:0;border:none;background:var(--accent);color:#fff" onclick="setShowKanji(true)">漢字</button>
+        <button id="btnHira"  class="btn" style="font-size:12px;padding:5px 14px;border-radius:0;border:none;background:var(--hover);color:var(--muted)" onclick="setShowKanji(false)">ひらがな</button>
+      </div>
+    </div>
+    <div class="deck-row">
+      <div class="deck-status" id="deckStatus"></div>
+      <button class="btn btn-secondary" style="font-size:12px;padding:6px 13px" onclick="shuffleDeck()">&#x1F500; Shuffle</button>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="quizProgress" style="width:0%"></div></div>
+    <div class="card" id="quizCard">
+      <div class="empty-state" id="quizEmpty" style="display:none">
+        No cards match the selected filters.<br><br>
+        <button class="btn btn-primary" onclick="selectAllLessons()">Select all lessons</button>
+      </div>
+      <div id="quizContent"></div>
+    </div>
+  </div>
+
+  <!-- ── PROGRESS ── -->
+  <div id="tab-stats" style="display:none">
+    <div class="card">
+      <div class="section-label">Study progress</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total</div></div>
+        <div class="stat-box"><div class="stat-num" id="statLearned">0</div><div class="stat-label">Learned</div></div>
+        <div class="stat-box"><div class="stat-num" id="statDue">0</div><div class="stat-label">Due</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">SRS levels</div>
+      <div id="srsBars" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <!-- ── SETTINGS ── -->
+  <div id="tab-settings" style="display:none">
+    <div class="card">
+      <div class="section-label">API Key</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px">
+        Required for Fill in blank, Grammar quiz, PDF extraction, and paste-to-cards.<br>
+        Get yours at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent2)">console.anthropic.com</a>.
+        Your key is stored locally in this browser only.
+      </p>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="apiKeyInput" type="password" placeholder="sk-ant-api03-…"
+          style="flex:1;border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:13px;font-family:var(--font-ui);background:var(--paper);color:var(--ink);outline:none">
+        <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
+      </div>
+      <div id="apiKeyStatus" style="font-size:12px;margin-top:8px;display:none"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Display</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+        <span style="font-size:14px">Show terms as</span>
+        <div style="display:flex;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden">
+          <button id="stnKanji" class="btn" style="font-size:12px;padding:5px 16px;border-radius:0;border:none;background:var(--accent);color:#fff" onclick="setShowKanji(true)">漢字</button>
+          <button id="stnHira"  class="btn" style="font-size:12px;padding:5px 16px;border-radius:0;border:none;background:var(--hover);color:var(--muted)" onclick="setShowKanji(false)">ひらがな</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Google Sheets</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px">
+        Sync your card list to a Google Sheet automatically.
+        Requires a Google OAuth 2.0 Client ID with <code style="background:var(--hover);padding:1px 5px;border-radius:4px;font-size:11px">https://claude.ai</code> as an authorised origin.
+      </p>
+      <div style="margin-bottom:10px">
+        <label style="font-size:12px;color:var(--muted)">OAuth Client ID</label>
+        <input id="gsClientIdInput" type="text" placeholder="123456789.apps.googleusercontent.com"
+          style="width:100%;border:1px solid var(--border);border-radius:9px;padding:9px 14px;font-size:13px;margin-top:4px;font-family:var(--font-ui);background:var(--paper);color:var(--ink);outline:none">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;color:var(--muted)">Sheet ID (leave blank to create new)</label>
+        <input id="gsSheetIdInput" type="text" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
+          style="width:100%;border:1px solid var(--border);border-radius:9px;padding:9px 14px;font-size:13px;margin-top:4px;font-family:var(--font-ui);background:var(--paper);color:var(--ink);outline:none">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="saveGSSettings()">Save &amp; Connect</button>
+        <button class="btn btn-secondary" id="gsSyncBtn" style="display:none" onclick="syncToSheets()">&#x1F504; Sync now</button>
+        <button class="btn btn-secondary" onclick="unlinkSheets()">Disconnect</button>
+      </div>
+      <div id="gsSettingsStatus" style="font-size:12px;margin-top:8px;display:none"></div>
+    </div>
+
+    <div class="card" style="font-size:12px;color:var(--muted);line-height:1.8">
+      <div class="section-label">About</div>
+      MNN1 &amp; MNN2 Vocab Study App<br>
+      Author: Greg Richardson<br>
+      MNN1 L1–25 + MNN2 L26–50 &nbsp;&bull;&nbsp; 651 seed cards<br>
+      Powered by Claude Sonnet &nbsp;&bull;&nbsp; SRS spaced repetition
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+// ── SEED DATA ──────────────────────────────────────────────────────────────
+const SEED=[
+// L1
+{jp:"私",r:"わたし",en:"I",l:"L1"},{jp:"私たち",r:"わたしたち",en:"we",l:"L1"},{jp:"あなた",r:"あなた",en:"you",l:"L1"},{jp:"あの人",r:"あのひと",en:"that person, he, she",l:"L1"},{jp:"みなさん",r:"みなさん",en:"ladies and gentlemen, all of you",l:"L1"},{jp:"先生",r:"せんせい",en:"teacher, instructor",l:"L1"},{jp:"学生",r:"がくせい",en:"student",l:"L1"},{jp:"会社員",r:"かいしゃいん",en:"company employee",l:"L1"},{jp:"銀行員",r:"ぎんこういん",en:"bank employee",l:"L1"},{jp:"医者",r:"いしゃ",en:"medical doctor",l:"L1"},{jp:"研究者",r:"けんきゅうしゃ",en:"researcher, scholar",l:"L1"},{jp:"エンジニア",r:"",en:"engineer",l:"L1"},{jp:"大学",r:"だいがく",en:"university",l:"L1"},{jp:"病院",r:"びょういん",en:"hospital",l:"L1"},{jp:"はい",r:"はい",en:"yes",l:"L1"},{jp:"いいえ",r:"いいえ",en:"no",l:"L1"},{jp:"はじめまして",r:"はじめまして",en:"How do you do? (first meeting)",l:"L1"},{jp:"どうぞよろしく",r:"どうぞよろしく",en:"Pleased to meet you",l:"L1"},
+// L2
+{jp:"これ",r:"これ",en:"this (thing here)",l:"L2"},{jp:"それ",r:"それ",en:"that (thing near you)",l:"L2"},{jp:"あれ",r:"あれ",en:"that (thing over there)",l:"L2"},{jp:"本",r:"ほん",en:"book",l:"L2"},{jp:"辞書",r:"じしょ",en:"dictionary",l:"L2"},{jp:"雑誌",r:"ざっし",en:"magazine",l:"L2"},{jp:"新聞",r:"しんぶん",en:"newspaper",l:"L2"},{jp:"ノート",r:"",en:"notebook",l:"L2"},{jp:"手帳",r:"てちょう",en:"pocket notebook",l:"L2"},{jp:"名刺",r:"めいし",en:"business card",l:"L2"},{jp:"鉛筆",r:"えんぴつ",en:"pencil",l:"L2"},{jp:"ボールペン",r:"",en:"ballpoint pen",l:"L2"},{jp:"鍵",r:"かぎ",en:"key",l:"L2"},{jp:"時計",r:"とけい",en:"watch, clock",l:"L2"},{jp:"傘",r:"かさ",en:"umbrella",l:"L2"},{jp:"かばん",r:"かばん",en:"bag, briefcase",l:"L2"},{jp:"テレビ",r:"",en:"television",l:"L2"},{jp:"ラジオ",r:"",en:"radio",l:"L2"},{jp:"カメラ",r:"",en:"camera",l:"L2"},{jp:"コンピューター",r:"",en:"computer",l:"L2"},{jp:"自動車",r:"じどうしゃ",en:"automobile, car",l:"L2"},{jp:"机",r:"つくえ",en:"desk",l:"L2"},{jp:"椅子",r:"いす",en:"chair",l:"L2"},{jp:"英語",r:"えいご",en:"English language",l:"L2"},{jp:"日本語",r:"にほんご",en:"Japanese language",l:"L2"},{jp:"何",r:"なん",en:"what",l:"L2"},
+// L3
+{jp:"ここ",r:"ここ",en:"here, this place",l:"L3"},{jp:"そこ",r:"そこ",en:"there, near you",l:"L3"},{jp:"あそこ",r:"あそこ",en:"that place over there",l:"L3"},{jp:"どこ",r:"どこ",en:"where",l:"L3"},{jp:"こちら",r:"こちら",en:"this way (polite)",l:"L3"},{jp:"そちら",r:"そちら",en:"that way near you (polite)",l:"L3"},{jp:"あちら",r:"あちら",en:"that way over there (polite)",l:"L3"},{jp:"どちら",r:"どちら",en:"which way (polite)",l:"L3"},{jp:"教室",r:"きょうしつ",en:"classroom",l:"L3"},{jp:"食堂",r:"しょくどう",en:"dining hall, canteen",l:"L3"},{jp:"事務所",r:"じむしょ",en:"office",l:"L3"},{jp:"会議室",r:"かいぎしつ",en:"conference room",l:"L3"},{jp:"部屋",r:"へや",en:"room",l:"L3"},{jp:"トイレ",r:"",en:"toilet, rest room",l:"L3"},{jp:"エレベーター",r:"",en:"elevator, lift",l:"L3"},{jp:"会社",r:"かいしゃ",en:"company",l:"L3"},{jp:"電話",r:"でんわ",en:"telephone",l:"L3"},{jp:"靴",r:"くつ",en:"shoes",l:"L3"},{jp:"ネクタイ",r:"",en:"necktie",l:"L3"},{jp:"ワイン",r:"",en:"wine",l:"L3"},
+// L4
+{jp:"起きます",r:"おきます",en:"get up, wake up",l:"L4"},{jp:"寝ます",r:"ねます",en:"sleep, go to bed",l:"L4"},{jp:"働きます",r:"はたらきます",en:"work",l:"L4"},{jp:"休みます",r:"やすみます",en:"take a rest, holiday",l:"L4"},{jp:"勉強します",r:"べんきょうします",en:"study",l:"L4"},{jp:"終わります",r:"おわります",en:"finish",l:"L4"},{jp:"銀行",r:"ぎんこう",en:"bank",l:"L4"},{jp:"郵便局",r:"ゆうびんきょく",en:"post office",l:"L4"},{jp:"図書館",r:"としょかん",en:"library",l:"L4"},{jp:"美術館",r:"びじゅつかん",en:"art museum",l:"L4"},{jp:"今",r:"いま",en:"now",l:"L4"},{jp:"半",r:"はん",en:"half",l:"L4"},{jp:"午前",r:"ごぜん",en:"a.m., morning",l:"L4"},{jp:"午後",r:"ごご",en:"p.m., afternoon",l:"L4"},{jp:"朝",r:"あさ",en:"morning",l:"L4"},{jp:"昼",r:"ひる",en:"daytime, noon",l:"L4"},{jp:"晩",r:"ばん",en:"night, evening",l:"L4"},{jp:"昨日",r:"きのう",en:"yesterday",l:"L4"},{jp:"今日",r:"きょう",en:"today",l:"L4"},{jp:"明日",r:"あした",en:"tomorrow",l:"L4"},{jp:"月曜日",r:"げつようび",en:"Monday",l:"L4"},{jp:"火曜日",r:"かようび",en:"Tuesday",l:"L4"},{jp:"水曜日",r:"すいようび",en:"Wednesday",l:"L4"},{jp:"木曜日",r:"もくようび",en:"Thursday",l:"L4"},{jp:"金曜日",r:"きんようび",en:"Friday",l:"L4"},{jp:"土曜日",r:"どようび",en:"Saturday",l:"L4"},{jp:"日曜日",r:"にちようび",en:"Sunday",l:"L4"},{jp:"誕生日",r:"たんじょうび",en:"birthday",l:"L4"},
+// L5
+{jp:"行きます",r:"いきます",en:"go",l:"L5"},{jp:"来ます",r:"きます",en:"come",l:"L5"},{jp:"帰ります",r:"かえります",en:"go home, return",l:"L5"},{jp:"電車",r:"でんしゃ",en:"train",l:"L5"},{jp:"飛行機",r:"ひこうき",en:"airplane",l:"L5"},{jp:"バス",r:"",en:"bus",l:"L5"},{jp:"タクシー",r:"",en:"taxi",l:"L5"},{jp:"船",r:"ふね",en:"ship, boat",l:"L5"},{jp:"新幹線",r:"しんかんせん",en:"Shinkansen (bullet train)",l:"L5"},{jp:"一日",r:"ついたち",en:"1st day of the month",l:"L5"},{jp:"二日",r:"ふつか",en:"2nd, two days",l:"L5"},{jp:"三日",r:"みっか",en:"3rd, three days",l:"L5"},{jp:"四日",r:"よっか",en:"4th, four days",l:"L5"},{jp:"五日",r:"いつか",en:"5th, five days",l:"L5"},{jp:"十日",r:"とおか",en:"10th, ten days",l:"L5"},{jp:"二十日",r:"はつか",en:"20th, twenty days",l:"L5"},
+// L6
+{jp:"食べます",r:"たべます",en:"eat",l:"L6"},{jp:"飲みます",r:"のみます",en:"drink",l:"L6"},{jp:"診ます",r:"みます",en:"see, look at, watch",l:"L6"},{jp:"聞きます",r:"ききます",en:"hear, listen",l:"L6"},{jp:"読みます",r:"よみます",en:"read",l:"L6"},{jp:"書きます",r:"かきます",en:"write, draw",l:"L6"},{jp:"買います",r:"かいます",en:"buy",l:"L6"},{jp:"します",r:"します",en:"do",l:"L6"},{jp:"会います",r:"あいます",en:"meet",l:"L6"},{jp:"ご飯",r:"ごはん",en:"meal, cooked rice",l:"L6"},{jp:"朝ご飯",r:"あさごはん",en:"breakfast",l:"L6"},{jp:"昼ご飯",r:"ひるごはん",en:"lunch",l:"L6"},{jp:"晩ご飯",r:"ばんごはん",en:"supper",l:"L6"},{jp:"パン",r:"",en:"bread",l:"L6"},{jp:"卵",r:"たまご",en:"egg",l:"L6"},{jp:"肉",r:"にく",en:"meat",l:"L6"},{jp:"魚",r:"さかな",en:"fish",l:"L6"},{jp:"野菜",r:"やさい",en:"vegetable",l:"L6"},{jp:"果物",r:"くだもの",en:"fruit",l:"L6"},{jp:"水",r:"みず",en:"water",l:"L6"},{jp:"お茶",r:"おちゃ",en:"tea, green tea",l:"L6"},{jp:"紅茶",r:"こうちゃ",en:"black tea",l:"L6"},{jp:"牛乳",r:"ぎゅうにゅう",en:"milk",l:"L6"},{jp:"ジュース",r:"",en:"juice",l:"L6"},{jp:"ビール",r:"",en:"beer",l:"L6"},{jp:"映画",r:"えいが",en:"movie",l:"L6"},{jp:"一緒に",r:"いっしょに",en:"together",l:"L6"},{jp:"時々",r:"ときどき",en:"sometimes",l:"L6"},
+// L7
+{jp:"あげます",r:"あげます",en:"give",l:"L7"},{jp:"もらいます",r:"もらいます",en:"receive",l:"L7"},{jp:"貸します",r:"かします",en:"lend",l:"L7"},{jp:"借ります",r:"かります",en:"borrow",l:"L7"},{jp:"教えます",r:"おしえます",en:"teach",l:"L7"},{jp:"習います",r:"ならいます",en:"learn",l:"L7"},{jp:"橋",r:"はし",en:"chopsticks",l:"L7"},{jp:"スプーン",r:"",en:"spoon",l:"L7"},{jp:"ナイフ",r:"",en:"knife",l:"L7"},{jp:"フォーク",r:"",en:"fork",l:"L7"},{jp:"ハサミ",r:"はさみ",en:"scissors",l:"L7"},{jp:"パソコン",r:"",en:"personal computer",l:"L7"},{jp:"花",r:"はな",en:"flower, blossom",l:"L7"},{jp:"プレゼント",r:"",en:"present, gift",l:"L7"},{jp:"お金",r:"おかね",en:"money",l:"L7"},{jp:"切手",r:"きって",en:"stamp",l:"L7"},
+// L8
+{jp:"きれい",r:"きれい",en:"beautiful, clean",l:"L8"},{jp:"静か",r:"しずか",en:"quiet",l:"L8"},{jp:"にぎやか",r:"にぎやか",en:"lively",l:"L8"},{jp:"有名",r:"ゆうめい",en:"famous",l:"L8"},{jp:"親切",r:"しんせつ",en:"kind",l:"L8"},{jp:"元気",r:"げんき",en:"healthy, cheerful",l:"L8"},{jp:"便利",r:"べんり",en:"convenient",l:"L8"},{jp:"大きい",r:"おおきい",en:"big, large",l:"L8"},{jp:"小さい",r:"ちいさい",en:"small, little",l:"L8"},{jp:"新しい",r:"あたらしい",en:"new",l:"L8"},{jp:"古い",r:"ふるい",en:"old (not of age)",l:"L8"},{jp:"いい",r:"いい",en:"good",l:"L8"},{jp:"悪い",r:"わるい",en:"bad",l:"L8"},{jp:"暑い",r:"あつい",en:"hot",l:"L8"},{jp:"寒い",r:"さむい",en:"cold (temperature)",l:"L8"},{jp:"難しい",r:"むずかしい",en:"difficult",l:"L8"},{jp:"易しい",r:"やさしい",en:"easy",l:"L8"},{jp:"高い",r:"たかい",en:"expensive, tall",l:"L8"},{jp:"安い",r:"やすい",en:"inexpensive",l:"L8"},{jp:"面白い",r:"おもしろい",en:"interesting",l:"L8"},{jp:"美味しい",r:"おいしい",en:"delicious, tasty",l:"L8"},{jp:"楽しい",r:"たのしい",en:"enjoyable",l:"L8"},{jp:"白い",r:"しろい",en:"white",l:"L8"},{jp:"黒い",r:"くろい",en:"black",l:"L8"},{jp:"赤い",r:"あかい",en:"red",l:"L8"},{jp:"青い",r:"あおい",en:"blue",l:"L8"},
+// L9
+{jp:"分かります",r:"わかります",en:"understand",l:"L9"},{jp:"好き",r:"すき",en:"like",l:"L9"},{jp:"嫌い",r:"きらい",en:"dislike",l:"L9"},{jp:"上手",r:"じょうず",en:"good at",l:"L9"},{jp:"下手",r:"へた",en:"poor at",l:"L9"},{jp:"料理",r:"りょうり",en:"cooking, dish",l:"L9"},{jp:"スポーツ",r:"",en:"sport",l:"L9"},{jp:"野球",r:"やきゅう",en:"baseball",l:"L9"},{jp:"音楽",r:"おんがく",en:"music",l:"L9"},{jp:"歌",r:"うた",en:"song",l:"L9"},{jp:"カラオケ",r:"",en:"karaoke",l:"L9"},{jp:"漢字",r:"かんじ",en:"Chinese characters",l:"L9"},{jp:"ひらがな",r:"ひらがな",en:"Hiragana script",l:"L9"},{jp:"カタカナ",r:"かたかな",en:"Katakana script",l:"L9"},{jp:"たくさん",r:"たくさん",en:"many, much",l:"L9"},{jp:"少し",r:"すこし",en:"a little, a few",l:"L9"},
+// L10
+{jp:"います",r:"います",en:"exist, be (animate)",l:"L10"},{jp:"あります",r:"あります",en:"exist, be (inanimate)",l:"L10"},{jp:"犬",r:"いぬ",en:"dog",l:"L10"},{jp:"猫",r:"ねこ",en:"cat",l:"L10"},{jp:"冷蔵庫",r:"れいぞうこ",en:"refrigerator",l:"L10"},{jp:"テーブル",r:"",en:"table",l:"L10"},{jp:"ベッド",r:"",en:"bed",l:"L10"},{jp:"窓",r:"まど",en:"window",l:"L10"},{jp:"公園",r:"こうえん",en:"park",l:"L10"},{jp:"本屋",r:"ほんや",en:"bookstore",l:"L10"},
+// L11
+{jp:"一つ",r:"ひとつ",en:"one (counting things)",l:"L11"},{jp:"二つ",r:"ふたつ",en:"two",l:"L11"},{jp:"三つ",r:"みっつ",en:"three",l:"L11"},{jp:"四つ",r:"よっつ",en:"four",l:"L11"},{jp:"五つ",r:"いつつ",en:"five",l:"L11"},{jp:"六つ",r:"むっつ",en:"six",l:"L11"},{jp:"七つ",r:"ななつ",en:"seven",l:"L11"},{jp:"八つ",r:"やっつ",en:"eight",l:"L11"},{jp:"九つ",r:"ここのつ",en:"nine",l:"L11"},{jp:"十",r:"とお",en:"ten",l:"L11"},{jp:"一人",r:"ひとり",en:"one person",l:"L11"},{jp:"二人",r:"ふたり",en:"two persons",l:"L11"},{jp:"りんご",r:"りんご",en:"apple",l:"L11"},{jp:"みかん",r:"みかん",en:"mandarin orange",l:"L11"},{jp:"サンドイッチ",r:"",en:"sandwich",l:"L11"},{jp:"葉書",r:"はがき",en:"postcard",l:"L11"},{jp:"封筒",r:"ふうとう",en:"envelope",l:"L11"},{jp:"両親",r:"りょうしん",en:"parents",l:"L11"},{jp:"兄弟",r:"きょうだい",en:"brothers and sisters",l:"L11"},{jp:"兄",r:"あに",en:"(my) elder brother",l:"L11"},{jp:"姉",r:"あね",en:"(my) elder sister",l:"L11"},{jp:"弟",r:"おとうと",en:"(my) younger brother",l:"L11"},{jp:"妹",r:"いもうと",en:"(my) younger sister",l:"L11"},{jp:"外国",r:"がいこく",en:"foreign country",l:"L11"},
+// L12
+{jp:"簡単",r:"かんたん",en:"easy, simple",l:"L12"},{jp:"近い",r:"ちかい",en:"near",l:"L12"},{jp:"遠い",r:"とおい",en:"far",l:"L12"},{jp:"速い",r:"はやい",en:"fast, early",l:"L12"},{jp:"遅い",r:"おそい",en:"slow, late",l:"L12"},{jp:"多い",r:"おおい",en:"many, much",l:"L12"},{jp:"少ない",r:"すくない",en:"few, a little",l:"L12"},{jp:"暖かい",r:"あたたかい",en:"warm",l:"L12"},{jp:"涼しい",r:"すずしい",en:"cool",l:"L12"},{jp:"甘い",r:"あまい",en:"sweet",l:"L12"},{jp:"辛い",r:"からい",en:"hot (taste), spicy",l:"L12"},{jp:"春",r:"はる",en:"spring",l:"L12"},{jp:"夏",r:"なつ",en:"summer",l:"L12"},{jp:"秋",r:"あき",en:"autumn, fall",l:"L12"},{jp:"冬",r:"ふゆ",en:"winter",l:"L12"},{jp:"天気",r:"てんき",en:"weather",l:"L12"},{jp:"雨",r:"あめ",en:"rain, rainy",l:"L12"},{jp:"雪",r:"ゆき",en:"snow, snowy",l:"L12"},{jp:"海",r:"うみ",en:"sea, ocean",l:"L12"},{jp:"パーティー",r:"",en:"party",l:"L12"},{jp:"試験",r:"しけん",en:"examination",l:"L12"},{jp:"すき焼き",r:"すきやき",en:"sukiyaki",l:"L12"},{jp:"どちら",r:"どちら",en:"which one (of two)",l:"L12"},{jp:"ずっと",r:"ずっと",en:"by far",l:"L12"},
+// L13
+{jp:"遊びます",r:"あそびます",en:"enjoy oneself, play",l:"L13"},{jp:"泳ぎます",r:"およぎます",en:"swim",l:"L13"},{jp:"疲れます",r:"つかれます",en:"get tired",l:"L13"},{jp:"結婚します",r:"けっこんします",en:"marry, get married",l:"L13"},{jp:"買い物します",r:"かいものします",en:"do shopping",l:"L13"},{jp:"食事します",r:"しょくじします",en:"have a meal, dine",l:"L13"},{jp:"散歩します",r:"さんぽします",en:"take a walk",l:"L13"},{jp:"欲しい",r:"ほしい",en:"want (something)",l:"L13"},{jp:"寂しい",r:"さびしい",en:"lonely",l:"L13"},{jp:"広い",r:"ひろい",en:"wide, spacious",l:"L13"},{jp:"狭い",r:"せまい",en:"narrow, small",l:"L13"},{jp:"プール",r:"",en:"swimming pool",l:"L13"},{jp:"川",r:"かわ",en:"river",l:"L13"},{jp:"スキー",r:"",en:"skiing",l:"L13"},{jp:"週末",r:"しゅうまつ",en:"weekend",l:"L13"},{jp:"何か",r:"なにか",en:"something",l:"L13"},
+// L14
+{jp:"付けます",r:"つけます",en:"turn on",l:"L14"},{jp:"消します",r:"けします",en:"turn off",l:"L14"},{jp:"開けます",r:"あけます",en:"open",l:"L14"},{jp:"閉めます",r:"しめます",en:"close, shut",l:"L14"},{jp:"急ぎます",r:"いそぎます",en:"hurry",l:"L14"},{jp:"待ちます",r:"まちます",en:"wait",l:"L14"},{jp:"曲がります",r:"まがります",en:"turn (to the right)",l:"L14"},{jp:"話します",r:"はなします",en:"speak, talk",l:"L14"},{jp:"始めます",r:"はじめます",en:"start, begin",l:"L14"},{jp:"ゆっくり",r:"ゆっくり",en:"slowly, leisurely",l:"L14"},{jp:"すぐ",r:"すぐ",en:"immediately",l:"L14"},{jp:"また",r:"また",en:"again",l:"L14"},{jp:"住所",r:"じゅうしょ",en:"address",l:"L14"},{jp:"塩",r:"しお",en:"salt",l:"L14"},{jp:"砂糖",r:"さとう",en:"sugar",l:"L14"},
+// L15
+{jp:"立ちます",r:"たちます",en:"stand up",l:"L15"},{jp:"座ります",r:"すわります",en:"sit down",l:"L15"},{jp:"使います",r:"つかいます",en:"use",l:"L15"},{jp:"作ります",r:"つくります",en:"make, produce",l:"L15"},{jp:"売ります",r:"うります",en:"sell",l:"L15"},{jp:"知ります",r:"しります",en:"get to know",l:"L15"},{jp:"知っています",r:"しっています",en:"know",l:"L15"},{jp:"住んでいます",r:"すんでいます",en:"live (in Osaka)",l:"L15"},{jp:"服",r:"ふく",en:"clothes",l:"L15"},{jp:"歯医者",r:"はいしゃ",en:"dentist",l:"L15"},{jp:"独身",r:"どくしん",en:"single, unmarried",l:"L15"},
+// L16
+{jp:"乗ります",r:"のります",en:"ride, get on (a train)",l:"L16"},{jp:"折ります",r:"おります",en:"get off (a train)",l:"L16"},{jp:"乗り換えます",r:"のりかえます",en:"change (trains)",l:"L16"},{jp:"若い",r:"わかい",en:"young",l:"L16"},{jp:"長い",r:"ながい",en:"long",l:"L16"},{jp:"短い",r:"みじかい",en:"short",l:"L16"},{jp:"明るい",r:"あかるい",en:"bright, light",l:"L16"},{jp:"暗い",r:"くらい",en:"dark",l:"L16"},{jp:"体",r:"からだ",en:"body",l:"L16"},{jp:"頭",r:"あたま",en:"head",l:"L16"},{jp:"髪",r:"かみ",en:"hair",l:"L16"},{jp:"顔",r:"かお",en:"face",l:"L16"},{jp:"目",r:"め",en:"eye",l:"L16"},{jp:"耳",r:"みみ",en:"ear",l:"L16"},{jp:"口",r:"くち",en:"mouth",l:"L16"},{jp:"お腹",r:"おなか",en:"stomach",l:"L16"},{jp:"足",r:"あし",en:"leg, foot",l:"L16"},{jp:"緑",r:"みどり",en:"green, greenery",l:"L16"},
+// L17
+{jp:"覚えます",r:"おぼえます",en:"memorize",l:"L17"},{jp:"忘れます",r:"わすれます",en:"forget",l:"L17"},{jp:"払います",r:"はらいます",en:"pay",l:"L17"},{jp:"返します",r:"かえします",en:"give back, return",l:"L17"},{jp:"出かけます",r:"でかけます",en:"go out",l:"L17"},{jp:"心配します",r:"しんぱいします",en:"worry",l:"L17"},{jp:"大切",r:"たいせつ",en:"important, precious",l:"L17"},{jp:"大丈夫",r:"だいじょうぶ",en:"all right",l:"L17"},{jp:"風",r:"かぜ",en:"cold, flu",l:"L17"},{jp:"熱",r:"ねつ",en:"fever",l:"L17"},{jp:"病気",r:"びょうき",en:"illness, disease",l:"L17"},{jp:"薬",r:"くすり",en:"medicine",l:"L17"},{jp:"お風呂",r:"おふろ",en:"bath",l:"L17"},
+// L18
+{jp:"出来ます",r:"できます",en:"be able to, can",l:"L18"},{jp:"洗います",r:"あらいます",en:"wash",l:"L18"},{jp:"弾きます",r:"ひきます",en:"play (stringed instrument)",l:"L18"},{jp:"歌います",r:"うたいます",en:"sing",l:"L18"},{jp:"運転します",r:"うんてんします",en:"drive",l:"L18"},{jp:"予約します",r:"よやくします",en:"reserve, book",l:"L18"},{jp:"ピアノ",r:"",en:"piano",l:"L18"},{jp:"趣味",r:"しゅみ",en:"hobby",l:"L18"},{jp:"課長",r:"かちょう",en:"section chief",l:"L18"},{jp:"社長",r:"しゃちょう",en:"president of a company",l:"L18"},
+// L19
+{jp:"登ります",r:"のぼります",en:"climb (a mountain)",l:"L19"},{jp:"泊まります",r:"とまります",en:"stay (at a hotel)",l:"L19"},{jp:"掃除します",r:"そうじします",en:"clean (a room)",l:"L19"},{jp:"洗濯します",r:"せんたくします",en:"wash (clothes)",l:"L19"},{jp:"なります",r:"なります",en:"become",l:"L19"},{jp:"眠い",r:"ねむい",en:"sleepy",l:"L19"},{jp:"強い",r:"つよい",en:"strong",l:"L19"},{jp:"弱い",r:"よわい",en:"weak",l:"L19"},{jp:"ゴルフ",r:"",en:"golf",l:"L19"},{jp:"相撲",r:"すもう",en:"sumo wrestling",l:"L19"},{jp:"一度",r:"いちど",en:"once",l:"L19"},{jp:"段々",r:"だんだん",en:"gradually",l:"L19"},{jp:"もうすぐ",r:"もうすぐ",en:"soon",l:"L19"},
+// L20
+{jp:"調べます",r:"しらべます",en:"check, investigate",l:"L20"},{jp:"直します",r:"なおします",en:"repair, correct",l:"L20"},{jp:"僕",r:"ぼく",en:"I (informal, male)",l:"L20"},{jp:"君",r:"きみ",en:"you (informal, male)",l:"L20"},{jp:"言葉",r:"ことば",en:"word, language",l:"L20"},{jp:"着物",r:"きもの",en:"kimono",l:"L20"},{jp:"ビザ",r:"",en:"visa",l:"L20"},{jp:"初め",r:"はじめ",en:"the beginning",l:"L20"},{jp:"終わり",r:"おわり",en:"the end",l:"L20"},
+// L21
+{jp:"思います",r:"おもいます",en:"think",l:"L21"},{jp:"言います",r:"いいます",en:"say",l:"L21"},{jp:"勝ちます",r:"かちます",en:"win",l:"L21"},{jp:"負けます",r:"まけます",en:"lose, be beaten",l:"L21"},{jp:"無駄",r:"むだ",en:"wasteful",l:"L21"},{jp:"同じ",r:"おなじ",en:"the same",l:"L21"},{jp:"凄い",r:"すごい",en:"awful, great (astonishment)",l:"L21"},{jp:"首相",r:"しゅしょう",en:"prime minister",l:"L21"},{jp:"政治",r:"せいじ",en:"politics",l:"L21"},{jp:"ニュース",r:"",en:"news",l:"L21"},{jp:"試合",r:"しあい",en:"game, match",l:"L21"},{jp:"アルバイト",r:"",en:"side job, part-time work",l:"L21"},{jp:"意見",r:"いけん",en:"opinion",l:"L21"},{jp:"最近",r:"さいきん",en:"recently, these days",l:"L21"},{jp:"多分",r:"たぶん",en:"probably, perhaps",l:"L21"},{jp:"きっと",r:"きっと",en:"surely",l:"L21"},
+// L22
+{jp:"着ます",r:"きます",en:"put on (a shirt, etc.)",l:"L22"},{jp:"履きます",r:"はきます",en:"put on (shoes, trousers)",l:"L22"},{jp:"被ります",r:"かぶります",en:"put on (a hat)",l:"L22"},{jp:"生まれます",r:"うまれます",en:"be born",l:"L22"},{jp:"コート",r:"",en:"coat",l:"L22"},{jp:"スーツ",r:"",en:"suit",l:"L22"},{jp:"セーター",r:"",en:"sweater",l:"L22"},{jp:"帽子",r:"ぼうし",en:"hat, cap",l:"L22"},{jp:"眼鏡",r:"めがね",en:"glasses",l:"L22"},{jp:"おめでとうございます",r:"おめでとうございます",en:"Congratulations",l:"L22"},
+// L23
+{jp:"回します",r:"まわします",en:"turn",l:"L23"},{jp:"弾きます",r:"ひきます",en:"pull",l:"L23"},{jp:"押します",r:"おします",en:"push, press",l:"L23"},{jp:"歩きます",r:"あるきます",en:"walk",l:"L23"},{jp:"渡ります",r:"わたります",en:"cross (a bridge)",l:"L23"},{jp:"道",r:"みち",en:"road, way",l:"L23"},{jp:"交差点",r:"こうさてん",en:"crossroad",l:"L23"},{jp:"信号",r:"しんごう",en:"traffic light",l:"L23"},{jp:"角",r:"かど",en:"corner",l:"L23"},{jp:"橋",r:"はし",en:"bridge",l:"L23"},{jp:"音",r:"おと",en:"sound",l:"L23"},
+// L24
+{jp:"くれます",r:"くれます",en:"give (me)",l:"L24"},{jp:"連れて行きます",r:"つれていきます",en:"take (someone)",l:"L24"},{jp:"連れて来ます",r:"つれてきます",en:"bring (someone)",l:"L24"},{jp:"紹介します",r:"しょうかいします",en:"introduce",l:"L24"},{jp:"説明します",r:"せつめいします",en:"explain",l:"L24"},{jp:"お爺さん",r:"おじいさん",en:"grandfather, old man",l:"L24"},{jp:"お婆さん",r:"おばあさん",en:"grandmother, old woman",l:"L24"},{jp:"準備",r:"じゅんび",en:"preparation",l:"L24"},{jp:"意味",r:"いみ",en:"meaning",l:"L24"},{jp:"お菓子",r:"おかし",en:"sweets, snacks",l:"L24"},{jp:"自分で",r:"じぶんで",en:"by oneself",l:"L24"},
+// L25
+{jp:"考えます",r:"かんがえます",en:"think, consider",l:"L25"},{jp:"着きます",r:"つきます",en:"arrive (at the station)",l:"L25"},{jp:"留学します",r:"りゅうがくします",en:"study abroad",l:"L25"},{jp:"田舎",r:"いなか",en:"countryside, hometown",l:"L25"},{jp:"大使館",r:"たいしかん",en:"embassy",l:"L25"},{jp:"グループ",r:"",en:"group",l:"L25"},{jp:"チャンス",r:"",en:"chance",l:"L25"},
+// L26
+{jp:"診ます",r:"みます",en:"check, examine",l:"L26"},{jp:"探します",r:"さがします",en:"look for, search",l:"L26"},{jp:"遅れます",r:"おくれます",en:"be late (for appointment)",l:"L26"},{jp:"やります",r:"やります",en:"do",l:"L26"},{jp:"参加します",r:"さんかします",en:"attend, participate",l:"L26"},{jp:"申し込みます",r:"もうしこみます",en:"apply for, enter for",l:"L26"},{jp:"柔道",r:"じゅうどう",en:"judo",l:"L26"},{jp:"運動会",r:"うんどうかい",en:"athletic meeting",l:"L26"},{jp:"ボランティア",r:"",en:"volunteer",l:"L26"},{jp:"今度",r:"こんど",en:"next time, another time",l:"L26"},{jp:"いつでも",r:"いつでも",en:"any time",l:"L26"},{jp:"どこでも",r:"どこでも",en:"anywhere",l:"L26"},{jp:"誰でも",r:"だれでも",en:"anybody",l:"L26"},{jp:"何でも",r:"なんでも",en:"anything",l:"L26"},
+// L27
+{jp:"買います",r:"かいます",en:"keep (a pet), raise (an animal)",l:"L27"},{jp:"建てます",r:"たてます",en:"build",l:"L27"},{jp:"走ります",r:"はしります",en:"run, drive (along a road)",l:"L27"},{jp:"見えます",r:"みえます",en:"can be seen",l:"L27"},{jp:"聞こえます",r:"きこえます",en:"can be heard",l:"L27"},{jp:"開きます",r:"ひらきます",en:"set up (a class), open, hold",l:"L27"},{jp:"ペット",r:"",en:"pet",l:"L27"},{jp:"鳥",r:"とり",en:"bird",l:"L27"},{jp:"声",r:"こえ",en:"voice",l:"L27"},{jp:"花火",r:"はなび",en:"fireworks",l:"L27"},{jp:"景色",r:"けしき",en:"scenery, view",l:"L27"},{jp:"昔",r:"むかし",en:"old days, ancient times",l:"L27"},{jp:"マンション",r:"",en:"condominium, apartment",l:"L27"},{jp:"台所",r:"だいどころ",en:"kitchen",l:"L27"},
+// L28
+{jp:"踊ります",r:"おどります",en:"dance",l:"L28"},{jp:"選びます",r:"えらびます",en:"choose",l:"L28"},{jp:"真面目",r:"まじめ",en:"serious",l:"L28"},{jp:"易しい",r:"やさしい",en:"gentle, kind",l:"L28"},{jp:"偉い",r:"えらい",en:"great, admirable",l:"L28"},{jp:"習慣",r:"しゅうかん",en:"custom",l:"L28"},{jp:"経験",r:"けいけん",en:"experience",l:"L28"},{jp:"人気",r:"にんき",en:"popularity",l:"L28"},{jp:"形",r:"かたち",en:"form, shape",l:"L28"},{jp:"色",r:"いろ",en:"color",l:"L28"},{jp:"味",r:"あじ",en:"taste",l:"L28"},{jp:"値段",r:"ねだん",en:"price",l:"L28"},{jp:"給料",r:"きゅうりょう",en:"salary",l:"L28"},{jp:"ドラマ",r:"",en:"drama",l:"L28"},{jp:"小説",r:"しょうせつ",en:"novel",l:"L28"},
+// L29
+{jp:"開きます",r:"あきます",en:"(a door) open",l:"L29"},{jp:"閉まります",r:"しまります",en:"(a door) close",l:"L29"},{jp:"壊れます",r:"こわれます",en:"(a chair) break",l:"L29"},{jp:"割れます",r:"われます",en:"(a glass) break, smash",l:"L29"},{jp:"折れます",r:"おれます",en:"(a tree) break, snap",l:"L29"},{jp:"破れます",r:"やぶれます",en:"(paper) tear",l:"L29"},{jp:"お皿",r:"おさら",en:"plate, dish",l:"L29"},{jp:"お茶碗",r:"おちゃわん",en:"rice bowl",l:"L29"},{jp:"ガラス",r:"",en:"glass (material)",l:"L29"},{jp:"袋",r:"ふくろ",en:"bag",l:"L29"},{jp:"財布",r:"さいふ",en:"wallet, purse",l:"L29"},
+// L30
+{jp:"飾ります",r:"かざります",en:"display, decorate",l:"L30"},{jp:"並べます",r:"ならべます",en:"arrange, line up",l:"L30"},{jp:"片づけます",r:"かたづけます",en:"put things in order, tidy up",l:"L30"},{jp:"決めます",r:"きめます",en:"decide",l:"L30"},{jp:"相談します",r:"そうだんします",en:"consult, discuss",l:"L30"},{jp:"授業",r:"じゅぎょう",en:"class",l:"L30"},{jp:"予定",r:"よてい",en:"plan, schedule",l:"L30"},{jp:"カレンダー",r:"",en:"calendar",l:"L30"},{jp:"ポスター",r:"",en:"poster",l:"L30"},{jp:"人形",r:"にんぎょう",en:"doll",l:"L30"},{jp:"花瓶",r:"かびん",en:"vase",l:"L30"},{jp:"鏡",r:"かがみ",en:"mirror",l:"L30"},{jp:"玄関",r:"げんかん",en:"front door, entrance hall",l:"L30"},{jp:"廊下",r:"ろうか",en:"corridor, hallway",l:"L30"},{jp:"壁",r:"かべ",en:"wall",l:"L30"},
+// L31
+{jp:"続けます",r:"つづけます",en:"continue",l:"L31"},{jp:"見つけます",r:"みつけます",en:"find",l:"L31"},{jp:"入学します",r:"にゅうがくします",en:"enter a university",l:"L31"},{jp:"卒業します",r:"そつぎょうします",en:"graduate from university",l:"L31"},{jp:"連休",r:"れんきゅう",en:"consecutive holidays",l:"L31"},{jp:"作文",r:"さくぶん",en:"essay, composition",l:"L31"},{jp:"展覧会",r:"てんらんかい",en:"exhibition",l:"L31"},{jp:"結婚式",r:"けっこんしき",en:"wedding ceremony",l:"L31"},{jp:"動物園",r:"どうぶつえん",en:"zoo",l:"L31"},{jp:"温泉",r:"おんせん",en:"hot spring, spa",l:"L31"},{jp:"お客",r:"おきゃく",en:"visitor, guest, customer",l:"L31"},
+// L32
+{jp:"運動します",r:"うんどうします",en:"take exercise",l:"L32"},{jp:"成功します",r:"せいこうします",en:"succeed",l:"L32"},{jp:"失敗します",r:"しっぱいします",en:"fail",l:"L32"},{jp:"治ります",r:"なおります",en:"recover from sickness, get well",l:"L32"},{jp:"晴れます",r:"はれます",en:"clear up",l:"L32"},{jp:"曇ります",r:"くもります",en:"get cloudy",l:"L32"},{jp:"心配",r:"しんぱい",en:"worried, anxious",l:"L32"},{jp:"おかしい",r:"おかしい",en:"strange, funny",l:"L32"},{jp:"うるさい",r:"うるさい",en:"noisy",l:"L32"},{jp:"空",r:"そら",en:"sky",l:"L32"},{jp:"太陽",r:"たいよう",en:"sun",l:"L32"},{jp:"星",r:"ほし",en:"star",l:"L32"},{jp:"月",r:"つき",en:"moon",l:"L32"},{jp:"風",r:"かぜ",en:"wind",l:"L32"},{jp:"インフルエンザ",r:"",en:"influenza",l:"L32"},
+// L33
+{jp:"逃げます",r:"にげます",en:"run away",l:"L33"},{jp:"諦めます",r:"あきらめます",en:"give up",l:"L33"},{jp:"投げます",r:"なげます",en:"throw",l:"L33"},{jp:"守ります",r:"まもります",en:"keep, follow, obey",l:"L33"},{jp:"伝えます",r:"つたえます",en:"convey (a message)",l:"L33"},{jp:"駄目",r:"だめ",en:"no good, not permitted",l:"L33"},{jp:"洗濯機",r:"せんたくき",en:"washing machine",l:"L33"},{jp:"規則",r:"きそく",en:"regulation, rule",l:"L33"},{jp:"入口",r:"いりぐち",en:"entrance",l:"L33"},{jp:"出口",r:"でぐち",en:"exit",l:"L33"},{jp:"無料",r:"むりょう",en:"free of charge",l:"L33"},
+// L34
+{jp:"磨きます",r:"みがきます",en:"brush (teeth), polish",l:"L34"},{jp:"折ります",r:"おります",en:"bend, fold, break",l:"L34"},{jp:"細い",r:"ほそい",en:"thin (small diameter)",l:"L34"},{jp:"太い",r:"ふとい",en:"thick (large diameter)",l:"L34"},{jp:"家具",r:"かぐ",en:"furniture",l:"L34"},{jp:"シートベルト",r:"",en:"seat belt",l:"L34"},{jp:"説明書",r:"せつめいしょ",en:"instruction book",l:"L34"},{jp:"黒",r:"くろ",en:"black (noun)",l:"L34"},{jp:"白",r:"しろ",en:"white (noun)",l:"L34"},{jp:"赤",r:"あか",en:"red (noun)",l:"L34"},{jp:"黄色",r:"きいろ",en:"yellow (noun)",l:"L34"},{jp:"茶色",r:"ちゃいろ",en:"brown (noun)",l:"L34"},
+// L35
+{jp:"咲きます",r:"さきます",en:"(flowers) bloom",l:"L35"},{jp:"変わります",r:"かわります",en:"(color) change",l:"L35"},{jp:"困ります",r:"こまります",en:"be in trouble",l:"L35"},{jp:"楽",r:"らく",en:"comfortable, easy",l:"L35"},{jp:"正しい",r:"ただしい",en:"correct, right",l:"L35"},{jp:"向こう",r:"むこう",en:"over there, the other side",l:"L35"},{jp:"島",r:"しま",en:"island",l:"L35"},{jp:"村",r:"むら",en:"village",l:"L35"},{jp:"港",r:"みなと",en:"port, harbor",l:"L35"},{jp:"山登り",r:"やまのぼり",en:"mountain climbing",l:"L35"},{jp:"ハイキング",r:"",en:"hiking",l:"L35"},{jp:"機会",r:"きかい",en:"chance, opportunity",l:"L35"},{jp:"方法",r:"ほうほう",en:"method",l:"L35"},
+// L36
+{jp:"届きます",r:"とどきます",en:"(parcels) be delivered",l:"L36"},{jp:"貯金します",r:"ちょきんします",en:"save money",l:"L36"},{jp:"痩せます",r:"やせます",en:"get slim, lose weight",l:"L36"},{jp:"慣れます",r:"なれます",en:"get accustomed to",l:"L36"},{jp:"硬い",r:"かたい",en:"hard, tough, solid",l:"L36"},{jp:"柔らかい",r:"やわらかい",en:"soft, tender",l:"L36"},{jp:"工場",r:"こうじょう",en:"factory",l:"L36"},{jp:"健康",r:"けんこう",en:"health",l:"L36"},{jp:"毎週",r:"まいしゅう",en:"every week",l:"L36"},{jp:"毎月",r:"まいつき",en:"every month",l:"L36"},{jp:"やっと",r:"やっと",en:"finally",l:"L36"},{jp:"必ず",r:"かならず",en:"without fail, by any means",l:"L36"},{jp:"できるだけ",r:"できるだけ",en:"as much as possible",l:"L36"},
+// L37
+{jp:"褒めます",r:"ほめます",en:"praise",l:"L37"},{jp:"叱ります",r:"しかります",en:"scold",l:"L37"},{jp:"誘います",r:"さそいます",en:"invite, ask someone to join",l:"L37"},{jp:"頼みます",r:"たのみます",en:"ask, request",l:"L37"},{jp:"壊します",r:"こわします",en:"break, destroy",l:"L37"},{jp:"発明します",r:"はつめいします",en:"invent",l:"L37"},{jp:"発見します",r:"はっけんします",en:"discover",l:"L37"},{jp:"米",r:"こめ",en:"rice",l:"L37"},{jp:"麦",r:"むぎ",en:"barley, wheat",l:"L37"},{jp:"泥棒",r:"どろぼう",en:"thief, robber",l:"L37"},{jp:"漫画",r:"まんが",en:"cartoon",l:"L37"},{jp:"世界中",r:"せかいじゅう",en:"all over the world",l:"L37"},
+// L38
+{jp:"育てます",r:"そだてます",en:"breed, bring up",l:"L38"},{jp:"亡くなります",r:"なくなります",en:"pass away",l:"L38"},{jp:"入院します",r:"にゅういんします",en:"enter hospital",l:"L38"},{jp:"退院します",r:"たいいんします",en:"leave hospital",l:"L38"},{jp:"赤ちゃん",r:"あかちゃん",en:"baby",l:"L38"},{jp:"小学校",r:"しょうがっこう",en:"elementary school",l:"L38"},{jp:"中学校",r:"ちゅうがっこう",en:"junior high school",l:"L38"},{jp:"海岸",r:"かいがん",en:"seaside, seashore",l:"L38"},{jp:"嘘",r:"うそ",en:"lie, fib",l:"L38"},{jp:"書類",r:"しょるい",en:"document, papers",l:"L38"},
+// L39
+{jp:"答えます",r:"こたえます",en:"answer (a question)",l:"L39"},{jp:"びっくりします",r:"びっくりします",en:"be surprised",l:"L39"},{jp:"がっかりします",r:"がっかりします",en:"be disappointed",l:"L39"},{jp:"安心します",r:"あんしんします",en:"be relieved",l:"L39"},{jp:"複雑",r:"ふくざつ",en:"complicated, complex",l:"L39"},{jp:"嬉しい",r:"うれしい",en:"glad, happy",l:"L39"},{jp:"悲しい",r:"かなしい",en:"sad",l:"L39"},{jp:"恥ずかしい",r:"はずかしい",en:"embarrassed, ashamed",l:"L39"},{jp:"地震",r:"じしん",en:"earthquake",l:"L39"},{jp:"台風",r:"たいふう",en:"typhoon",l:"L39"},{jp:"火事",r:"かじ",en:"fire",l:"L39"},{jp:"事故",r:"じこ",en:"accident",l:"L39"},
+// L40
+{jp:"数えます",r:"かぞえます",en:"count",l:"L40"},{jp:"確かめます",r:"たしかめます",en:"confirm, make sure",l:"L40"},{jp:"出発します",r:"しゅっぱつします",en:"depart",l:"L40"},{jp:"到着します",r:"とうちゃくします",en:"arrive",l:"L40"},{jp:"危険",r:"きけん",en:"dangerous",l:"L40"},{jp:"必要",r:"ひつよう",en:"necessary",l:"L40"},{jp:"地球",r:"ちきゅう",en:"earth",l:"L40"},{jp:"長さ",r:"ながさ",en:"length",l:"L40"},{jp:"重さ",r:"おもさ",en:"weight",l:"L40"},{jp:"高さ",r:"たかさ",en:"height",l:"L40"},{jp:"マラソン",r:"",en:"marathon",l:"L40"},{jp:"コンテスト",r:"",en:"contest",l:"L40"},{jp:"本当",r:"ほんとう",en:"truth, fact",l:"L40"},{jp:"間違い",r:"まちがい",en:"mistake",l:"L40"},
+// L41
+{jp:"頂きます",r:"いただきます",en:"receive (humble)",l:"L41"},{jp:"下さいます",r:"くださいます",en:"give (respectful)",l:"L41"},{jp:"可愛い",r:"かわいい",en:"lovely, cute",l:"L41"},{jp:"お祝い",r:"おいわい",en:"celebration, gift",l:"L41"},{jp:"興味",r:"きょうみ",en:"interest",l:"L41"},{jp:"情報",r:"じょうほう",en:"information",l:"L41"},{jp:"文法",r:"ぶんぽう",en:"grammar",l:"L41"},{jp:"発音",r:"はつおん",en:"pronunciation",l:"L41"},{jp:"おもちゃ",r:"おもちゃ",en:"toy",l:"L41"},{jp:"ハンカチ",r:"",en:"handkerchief",l:"L41"},{jp:"靴下",r:"くつした",en:"socks, stockings",l:"L41"},{jp:"指輪",r:"ゆびわ",en:"ring",l:"L41"},
+// L42
+{jp:"包みます",r:"つつみます",en:"wrap",l:"L42"},{jp:"沸かします",r:"わかします",en:"boil",l:"L42"},{jp:"混ぜます",r:"まぜます",en:"mix",l:"L42"},{jp:"弁護士",r:"べんごし",en:"lawyer, attorney",l:"L42"},{jp:"音楽家",r:"おんがくか",en:"musician",l:"L42"},{jp:"教育",r:"きょういく",en:"education",l:"L42"},{jp:"歴史",r:"れきし",en:"history",l:"L42"},{jp:"文化",r:"ぶんか",en:"culture",l:"L42"},{jp:"社会",r:"しゃかい",en:"society",l:"L42"},{jp:"法律",r:"ほうりつ",en:"law",l:"L42"},{jp:"戦争",r:"せんそう",en:"war",l:"L42"},{jp:"平和",r:"へいわ",en:"peace",l:"L42"},{jp:"ミキサー",r:"",en:"mixer, blender",l:"L42"},{jp:"缶詰",r:"かんづめ",en:"canned food",l:"L42"},
+// L43
+{jp:"増えます",r:"ふえます",en:"increase",l:"L43"},{jp:"減ります",r:"へります",en:"decrease",l:"L43"},{jp:"上がります",r:"あがります",en:"(price) rise",l:"L43"},{jp:"下がります",r:"さがります",en:"(price) fall",l:"L43"},{jp:"丈夫",r:"じょうぶ",en:"strong, healthy",l:"L43"},{jp:"幸せ",r:"しあわせ",en:"happy",l:"L43"},{jp:"上手い",r:"うまい",en:"tasty, good at",l:"L43"},{jp:"まずい",r:"まずい",en:"not tasty",l:"L43"},{jp:"つまらない",r:"つまらない",en:"boring, uninteresting",l:"L43"},{jp:"ガソリン",r:"",en:"petrol, gasoline",l:"L43"},{jp:"暖房",r:"だんぼう",en:"heating",l:"L43"},{jp:"冷房",r:"れいぼう",en:"air-conditioning",l:"L43"},
+// L44
+{jp:"泣きます",r:"なきます",en:"cry",l:"L44"},{jp:"笑います",r:"わらいます",en:"laugh, smile",l:"L44"},{jp:"濡れます",r:"ぬれます",en:"get wet",l:"L44"},{jp:"滑ります",r:"すべります",en:"slip",l:"L44"},{jp:"安全",r:"あんぜん",en:"safe",l:"L44"},{jp:"丁寧",r:"ていねい",en:"polite, courteous",l:"L44"},{jp:"空気",r:"くうき",en:"air",l:"L44"},{jp:"和食",r:"わしょく",en:"Japanese dish",l:"L44"},{jp:"洋食",r:"ようしょく",en:"Western dish",l:"L44"},{jp:"シングル",r:"",en:"single room",l:"L44"},{jp:"ツイン",r:"",en:"twin-bedded room",l:"L44"},{jp:"理由",r:"りゆう",en:"reason",l:"L44"},
+// L45
+{jp:"謝ります",r:"あやまります",en:"apologize",l:"L45"},{jp:"信じます",r:"しんじます",en:"believe, trust",l:"L45"},{jp:"用意します",r:"ようします",en:"prepare",l:"L45"},{jp:"キャンセルします",r:"",en:"cancel",l:"L45"},{jp:"保証書",r:"ほしょうしょ",en:"guarantee",l:"L45"},{jp:"領収書",r:"りょうしゅうしょ",en:"receipt",l:"L45"},{jp:"贈り物",r:"おくりもの",en:"gift, present",l:"L45"},{jp:"中止",r:"ちゅうし",en:"calling off, cancellation",l:"L45"},{jp:"急に",r:"きゅうに",en:"suddenly",l:"L45"},{jp:"ちゃんと",r:"ちゃんと",en:"regularly, properly",l:"L45"},
+// L46
+{jp:"焼きます",r:"やきます",en:"bake, grill, roast",l:"L46"},{jp:"渡します",r:"わたします",en:"hand over",l:"L46"},{jp:"出ます",r:"でます",en:"(a bus) leave, depart",l:"L46"},{jp:"留守",r:"るす",en:"absence",l:"L46"},{jp:"宅配便",r:"たくはいびん",en:"delivery service",l:"L46"},{jp:"原因",r:"げんいん",en:"cause",l:"L46"},{jp:"食欲",r:"しょくよく",en:"appetite",l:"L46"},{jp:"丁度",r:"ちょうど",en:"just, exactly",l:"L46"},
+// L47
+{jp:"集まります",r:"あつまります",en:"(people) gather",l:"L47"},{jp:"別れます",r:"わかれます",en:"(people) part, separate",l:"L47"},{jp:"長生きします",r:"ながいきします",en:"live long",l:"L47"},{jp:"酷い",r:"ひどい",en:"terrible, severe",l:"L47"},{jp:"怖い",r:"こわい",en:"frightening, horrible",l:"L47"},{jp:"天気予報",r:"てんきよほう",en:"weather forecast",l:"L47"},{jp:"人口",r:"じんこう",en:"population",l:"L47"},{jp:"科学",r:"かがく",en:"science",l:"L47"},{jp:"医学",r:"いがく",en:"medicine, medical science",l:"L47"},{jp:"賛成",r:"さんせい",en:"approval, agreement",l:"L47"},{jp:"反対",r:"はんたい",en:"objection, opposition",l:"L47"},{jp:"救急車",r:"きゅうきゅうしゃ",en:"ambulance",l:"L47"},
+// L48
+{jp:"降ろします",r:"おろします",en:"put down, lower",l:"L48"},{jp:"届けます",r:"とどけます",en:"deliver, report",l:"L48"},{jp:"嫌",r:"いや",en:"unwilling, reluctant",l:"L48"},{jp:"厳しい",r:"きびしい",en:"strict, hard",l:"L48"},{jp:"塾",r:"じゅく",en:"cram school",l:"L48"},{jp:"スケジュール",r:"",en:"schedule",l:"L48"},{jp:"自由に",r:"じゆうに",en:"freely",l:"L48"},
+// L49
+{jp:"勤めます",r:"つとめます",en:"work (for a company)",l:"L49"},{jp:"過ごします",r:"すごします",en:"spend (time), pass (time)",l:"L49"},{jp:"いらっしゃいます",r:"いらっしゃいます",en:"be, go, come (respectful)",l:"L49"},{jp:"召し上がります",r:"めしあがります",en:"eat, drink (respectful)",l:"L49"},{jp:"おっしゃいます",r:"おっしゃいます",en:"say (respectful)",l:"L49"},{jp:"挨拶",r:"あいさつ",en:"greeting, address",l:"L49"},{jp:"旅館",r:"りょかん",en:"Japanese-style hotel or inn",l:"L49"},{jp:"貿易",r:"ぼうえき",en:"trade",l:"L49"},{jp:"たまに",r:"たまに",en:"once in a while",l:"L49"},
+// L50
+{jp:"参ります",r:"まいります",en:"go, come (humble)",l:"L50"},{jp:"折ります",r:"おります",en:"be (humble equivalent of います)",l:"L50"},{jp:"申します",r:"もうします",en:"say (humble)",l:"L50"},{jp:"いたします",r:"いたします",en:"do (humble)",l:"L50"},{jp:"存じます",r:"ぞんじます",en:"know (humble)",l:"L50"},{jp:"私",r:"わたくし",en:"I (humble)",l:"L50"},{jp:"お宅",r:"おたく",en:"(someone else's) house",l:"L50"},{jp:"最初に",r:"さいしょに",en:"first of all",l:"L50"},{jp:"最後に",r:"さいごに",en:"lastly",l:"L50"},
+];
+
+var KANJI_MAP = {"わたし": "私", "わたしたち": "私たち", "あのひと": "あの人", "せんせい": "先生", "がくせい": "学生", "かいしゃいん": "会社員", "ぎんこういん": "銀行員", "いしゃ": "医者", "けんきゅうしゃ": "研究者", "だいがく": "大学", "びょういん": "病院", "ほん": "本", "じしょ": "辞書", "ざっし": "雑誌", "しんぶん": "新聞", "てちょう": "手帳", "めいし": "名刺", "えんぴつ": "鉛筆", "かぎ": "鍵", "とけい": "時計", "かさ": "傘", "じどうしゃ": "自動車", "つくえ": "机", "いす": "椅子", "えいご": "英語", "にほんご": "日本語", "なん": "何", "きょうしつ": "教室", "しょくどう": "食堂", "じむしょ": "事務所", "かいぎしつ": "会議室", "へや": "部屋", "かいしゃ": "会社", "でんわ": "電話", "くつ": "靴", "おきます": "起きます", "ねます": "寝ます", "はたらきます": "働きます", "やすみます": "休みます", "べんきょうします": "勉強します", "おわります": "終わります", "ぎんこう": "銀行", "ゆうびんきょく": "郵便局", "としょかん": "図書館", "びじゅつかん": "美術館", "いま": "今", "はん": "半", "ごぜん": "午前", "ごご": "午後", "あさ": "朝", "ひる": "昼", "ばん": "晩", "きのう": "昨日", "きょう": "今日", "あした": "明日", "げつようび": "月曜日", "かようび": "火曜日", "すいようび": "水曜日", "もくようび": "木曜日", "きんようび": "金曜日", "どようび": "土曜日", "にちようび": "日曜日", "たんじょうび": "誕生日", "いきます": "行きます", "きます": "着ます", "かえります": "帰ります", "でんしゃ": "電車", "ひこうき": "飛行機", "ふね": "船", "しんかんせん": "新幹線", "ついたち": "一日", "ふつか": "二日", "みっか": "三日", "よっか": "四日", "いつか": "五日", "とおか": "十日", "はつか": "二十日", "たべます": "食べます", "のみます": "飲みます", "みます": "診ます", "ききます": "聞きます", "よみます": "読みます", "かきます": "書きます", "かいます": "買います", "あいます": "会います", "ごはん": "ご飯", "あさごはん": "朝ご飯", "ひるごはん": "昼ご飯", "ばんごはん": "晩ご飯", "たまご": "卵", "にく": "肉", "さかな": "魚", "やさい": "野菜", "くだもの": "果物", "みず": "水", "おちゃ": "お茶", "こうちゃ": "紅茶", "ぎゅうにゅう": "牛乳", "えいが": "映画", "いっしょに": "一緒に", "ときどき": "時々", "かします": "貸します", "かります": "借ります", "おしえます": "教えます", "ならいます": "習います", "はし": "橋", "はさみ": "ハサミ", "はな": "花", "おかね": "お金", "きって": "切手", "しずか": "静か", "ゆうめい": "有名", "しんせつ": "親切", "げんき": "元気", "べんり": "便利", "おおきい": "大きい", "ちいさい": "小さい", "あたらしい": "新しい", "ふるい": "古い", "わるい": "悪い", "あつい": "暑い", "さむい": "寒い", "むずかしい": "難しい", "やさしい": "易しい", "たかい": "高い", "やすい": "安い", "おもしろい": "面白い", "おいしい": "美味しい", "たのしい": "楽しい", "しろい": "白い", "くろい": "黒い", "あかい": "赤い", "あおい": "青い", "わかります": "分かります", "すき": "好き", "きらい": "嫌い", "じょうず": "上手", "へた": "下手", "りょうり": "料理", "やきゅう": "野球", "おんがく": "音楽", "うた": "歌", "かんじ": "漢字", "かたかな": "カタカナ", "すこし": "少し", "いぬ": "犬", "ねこ": "猫", "れいぞうこ": "冷蔵庫", "まど": "窓", "こうえん": "公園", "ほんや": "本屋", "ひとつ": "一つ", "ふたつ": "二つ", "みっつ": "三つ", "よっつ": "四つ", "いつつ": "五つ", "むっつ": "六つ", "ななつ": "七つ", "やっつ": "八つ", "ここのつ": "九つ", "とお": "十", "ひとり": "一人", "ふたり": "二人", "はがき": "葉書", "ふうとう": "封筒", "りょうしん": "両親", "きょうだい": "兄弟", "あに": "兄", "あね": "姉", "おとうと": "弟", "いもうと": "妹", "がいこく": "外国", "かんたん": "簡単", "ちかい": "近い", "とおい": "遠い", "はやい": "速い", "おそい": "遅い", "おおい": "多い", "すくない": "少ない", "あたたかい": "暖かい", "すずしい": "涼しい", "あまい": "甘い", "からい": "辛い", "はる": "春", "なつ": "夏", "あき": "秋", "ふゆ": "冬", "てんき": "天気", "あめ": "雨", "ゆき": "雪", "うみ": "海", "しけん": "試験", "すきやき": "すき焼き", "あそびます": "遊びます", "およぎます": "泳ぎます", "つかれます": "疲れます", "けっこんします": "結婚します", "かいものします": "買い物します", "しょくじします": "食事します", "さんぽします": "散歩します", "ほしい": "欲しい", "さびしい": "寂しい", "ひろい": "広い", "せまい": "狭い", "かわ": "川", "しゅうまつ": "週末", "なにか": "何か", "つけます": "付けます", "けします": "消します", "あけます": "開けます", "しめます": "閉めます", "いそぎます": "急ぎます", "まちます": "待ちます", "まがります": "曲がります", "はなします": "話します", "はじめます": "始めます", "じゅうしょ": "住所", "しお": "塩", "さとう": "砂糖", "たちます": "立ちます", "すわります": "座ります", "つかいます": "使います", "つくります": "作ります", "うります": "売ります", "しります": "知ります", "しっています": "知っています", "すんでいます": "住んでいます", "ふく": "服", "はいしゃ": "歯医者", "どくしん": "独身", "のります": "乗ります", "おります": "折ります", "のりかえます": "乗り換えます", "わかい": "若い", "ながい": "長い", "みじかい": "短い", "あかるい": "明るい", "くらい": "暗い", "からだ": "体", "あたま": "頭", "かみ": "髪", "かお": "顔", "め": "目", "みみ": "耳", "くち": "口", "おなか": "お腹", "あし": "足", "みどり": "緑", "おぼえます": "覚えます", "わすれます": "忘れます", "はらいます": "払います", "かえします": "返します", "でかけます": "出かけます", "しんぱいします": "心配します", "たいせつ": "大切", "だいじょうぶ": "大丈夫", "かぜ": "風", "ねつ": "熱", "びょうき": "病気", "くすり": "薬", "おふろ": "お風呂", "できます": "出来ます", "あらいます": "洗います", "ひきます": "弾きます", "うたいます": "歌います", "うんてんします": "運転します", "よやくします": "予約します", "しゅみ": "趣味", "かちょう": "課長", "しゃちょう": "社長", "のぼります": "登ります", "とまります": "泊まります", "そうじします": "掃除します", "せんたくします": "洗濯します", "ねむい": "眠い", "つよい": "強い", "よわい": "弱い", "すもう": "相撲", "いちど": "一度", "だんだん": "段々", "しらべます": "調べます", "なおします": "直します", "ぼく": "僕", "きみ": "君", "ことば": "言葉", "きもの": "着物", "はじめ": "初め", "おわり": "終わり", "おもいます": "思います", "いいます": "言います", "かちます": "勝ちます", "まけます": "負けます", "むだ": "無駄", "おなじ": "同じ", "すごい": "凄い", "しゅしょう": "首相", "せいじ": "政治", "しあい": "試合", "いけん": "意見", "さいきん": "最近", "たぶん": "多分", "はきます": "履きます", "かぶります": "被ります", "うまれます": "生まれます", "ぼうし": "帽子", "めがね": "眼鏡", "まわします": "回します", "おします": "押します", "あるきます": "歩きます", "わたります": "渡ります", "みち": "道", "こうさてん": "交差点", "しんごう": "信号", "かど": "角", "おと": "音", "つれていきます": "連れて行きます", "つれてきます": "連れて来ます", "しょうかいします": "紹介します", "せつめいします": "説明します", "おじいさん": "お爺さん", "おばあさん": "お婆さん", "じゅんび": "準備", "いみ": "意味", "おかし": "お菓子", "じぶんで": "自分で", "かんがえます": "考えます", "つきます": "着きます", "りゅうがくします": "留学します", "いなか": "田舎", "たいしかん": "大使館", "さがします": "探します", "おくれます": "遅れます", "さんかします": "参加します", "もうしこみます": "申し込みます", "じゅうどう": "柔道", "うんどうかい": "運動会", "こんど": "今度", "だれでも": "誰でも", "なんでも": "何でも", "たてます": "建てます", "はしります": "走ります", "みえます": "見えます", "きこえます": "聞こえます", "ひらきます": "開きます", "とり": "鳥", "こえ": "声", "はなび": "花火", "けしき": "景色", "むかし": "昔", "だいどころ": "台所", "おどります": "踊ります", "えらびます": "選びます", "まじめ": "真面目", "えらい": "偉い", "しゅうかん": "習慣", "けいけん": "経験", "にんき": "人気", "かたち": "形", "いろ": "色", "あじ": "味", "ねだん": "値段", "きゅうりょう": "給料", "しょうせつ": "小説", "あきます": "開きます", "しまります": "閉まります", "こわれます": "壊れます", "われます": "割れます", "おれます": "折れます", "やぶれます": "破れます", "おさら": "お皿", "おちゃわん": "お茶碗", "ふくろ": "袋", "さいふ": "財布", "かざります": "飾ります", "ならべます": "並べます", "かたづけます": "片づけます", "きめます": "決めます", "そうだんします": "相談します", "じゅぎょう": "授業", "よてい": "予定", "にんぎょう": "人形", "かびん": "花瓶", "かがみ": "鏡", "げんかん": "玄関", "ろうか": "廊下", "かべ": "壁", "つづけます": "続けます", "みつけます": "見つけます", "にゅうがくします": "入学します", "そつぎょうします": "卒業します", "れんきゅう": "連休", "さくぶん": "作文", "てんらんかい": "展覧会", "けっこんしき": "結婚式", "どうぶつえん": "動物園", "おんせん": "温泉", "おきゃく": "お客", "うんどうします": "運動します", "せいこうします": "成功します", "しっぱいします": "失敗します", "なおります": "治ります", "はれます": "晴れます", "くもります": "曇ります", "しんぱい": "心配", "そら": "空", "たいよう": "太陽", "ほし": "星", "つき": "月", "にげます": "逃げます", "あきらめます": "諦めます", "なげます": "投げます", "まもります": "守ります", "つたえます": "伝えます", "だめ": "駄目", "せんたくき": "洗濯機", "きそく": "規則", "いりぐち": "入口", "でぐち": "出口", "むりょう": "無料", "みがきます": "磨きます", "ほそい": "細い", "ふとい": "太い", "かぐ": "家具", "せつめいしょ": "説明書", "くろ": "黒", "しろ": "白", "あか": "赤", "きいろ": "黄色", "ちゃいろ": "茶色", "さきます": "咲きます", "かわります": "変わります", "こまります": "困ります", "らく": "楽", "ただしい": "正しい", "むこう": "向こう", "しま": "島", "むら": "村", "みなと": "港", "やまのぼり": "山登り", "きかい": "機会", "ほうほう": "方法", "とどきます": "届きます", "ちょきんします": "貯金します", "やせます": "痩せます", "なれます": "慣れます", "かたい": "硬い", "やわらかい": "柔らかい", "こうじょう": "工場", "けんこう": "健康", "まいしゅう": "毎週", "まいつき": "毎月", "かならず": "必ず", "ほめます": "褒めます", "しかります": "叱ります", "さそいます": "誘います", "たのみます": "頼みます", "こわします": "壊します", "はつめいします": "発明します", "はっけんします": "発見します", "こめ": "米", "むぎ": "麦", "どろぼう": "泥棒", "まんが": "漫画", "せかいじゅう": "世界中", "そだてます": "育てます", "なくなります": "亡くなります", "にゅういんします": "入院します", "たいいんします": "退院します", "あかちゃん": "赤ちゃん", "しょうがっこう": "小学校", "ちゅうがっこう": "中学校", "かいがん": "海岸", "うそ": "嘘", "しょるい": "書類", "こたえます": "答えます", "あんしんします": "安心します", "ふくざつ": "複雑", "うれしい": "嬉しい", "かなしい": "悲しい", "はずかしい": "恥ずかしい", "じしん": "地震", "たいふう": "台風", "かじ": "火事", "じこ": "事故", "かぞえます": "数えます", "たしかめます": "確かめます", "しゅっぱつします": "出発します", "とうちゃくします": "到着します", "きけん": "危険", "ひつよう": "必要", "ちきゅう": "地球", "ながさ": "長さ", "おもさ": "重さ", "たかさ": "高さ", "ほんとう": "本当", "まちがい": "間違い", "いただきます": "頂きます", "くださいます": "下さいます", "かわいい": "可愛い", "おいわい": "お祝い", "きょうみ": "興味", "じょうほう": "情報", "ぶんぽう": "文法", "はつおん": "発音", "くつした": "靴下", "ゆびわ": "指輪", "つつみます": "包みます", "わかします": "沸かします", "まぜます": "混ぜます", "べんごし": "弁護士", "おんがくか": "音楽家", "きょういく": "教育", "れきし": "歴史", "ぶんか": "文化", "しゃかい": "社会", "ほうりつ": "法律", "せんそう": "戦争", "へいわ": "平和", "かんづめ": "缶詰", "ふえます": "増えます", "へります": "減ります", "あがります": "上がります", "さがります": "下がります", "じょうぶ": "丈夫", "しあわせ": "幸せ", "うまい": "上手い", "だんぼう": "暖房", "れいぼう": "冷房", "なきます": "泣きます", "わらいます": "笑います", "ぬれます": "濡れます", "すべります": "滑ります", "あんぜん": "安全", "ていねい": "丁寧", "くうき": "空気", "わしょく": "和食", "ようしょく": "洋食", "りゆう": "理由", "あやまります": "謝ります", "しんじます": "信じます", "ようします": "用意します", "ほしょうしょ": "保証書", "りょうしゅうしょ": "領収書", "おくりもの": "贈り物", "ちゅうし": "中止", "きゅうに": "急に", "やきます": "焼きます", "わたします": "渡します", "でます": "出ます", "るす": "留守", "たくはいびん": "宅配便", "げんいん": "原因", "しょくよく": "食欲", "ちょうど": "丁度", "あつまります": "集まります", "わかれます": "別れます", "ながいきします": "長生きします", "ひどい": "酷い", "こわい": "怖い", "てんきよほう": "天気予報", "じんこう": "人口", "かがく": "科学", "いがく": "医学", "さんせい": "賛成", "はんたい": "反対", "きゅうきゅうしゃ": "救急車", "おろします": "降ろします", "とどけます": "届けます", "いや": "嫌", "きびしい": "厳しい", "じゅく": "塾", "じゆうに": "自由に", "つとめます": "勤めます", "すごします": "過ごします", "めしあがります": "召し上がります", "あいさつ": "挨拶", "りょかん": "旅館", "ぼうえき": "貿易", "まいります": "参ります", "もうします": "申します", "ぞんじます": "存じます", "わたくし": "私", "おたく": "お宅", "さいしょに": "最初に", "さいごに": "最後に"};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+var STORAGE_KEY = 'goi-v4';
+var cards = [];
+var selectedLessons = new Set();  // populated on load with all lessons
+var selectedTypes   = new Set(['verb','i-adj','na-adj','noun','other']);
+var quizDeck     = [];
+var quizDeckPos  = 0;
+var currentCard  = null;
+var currentMode  = 'mc-jp-en';
+var flipped      = false;
+var fillData     = null;
+var answered     = false;
+var quizScore    = {correct:0, wrong:0, total:0};
+var pdfStop      = false;
+var customTagsList = [];   // all user-created tag strings
+var listSearchVal  = '';   // search filter in My List
+var gsSheetId      = '';   // Google Sheets ID if linked
+var gsAccessToken  = '';   // OAuth access token
+var weakFilter     = false; // only show SRS 0-1 in study
+var showKanji      = true;  // true=show kanji first, false=show hiragana first
+var questionLimit = 10;   // max questions for Fill-in-blank and Grammar (0 = unlimited)
+var modeQCount    = 0;    // questions answered in current Fill-in/Grammar session
+var pdfDoc       = null;
+var listLesson   = 'all';
+var listType     = 'all';
+
+// ── STORAGE ────────────────────────────────────────────────────────────────
+async function sGet(k) {
+  if (window.storage) { try { return await window.storage.get(k); } catch(e) {} }
+  var v = localStorage.getItem(k);
+  return v ? {value:v} : null;
+}
+async function sSet(k, v) {
+  if (window.storage) { try { return await window.storage.set(k, v); } catch(e) {} }
+  localStorage.setItem(k, v);
+}
+
+async function saveCards() {
+  try { await sSet(STORAGE_KEY, JSON.stringify(cards)); } catch(e) {}
+  updateCardCount();
+}
+
+function updateCardCount() {
+  document.getElementById('cardCount').textContent = cards.length + ' cards';
+}
+
+async function loadCards() {
+  try {
+    var r = await sGet(STORAGE_KEY);
+    if (r && r.value) cards = JSON.parse(r.value);
+  } catch(e) {}
+  if (!cards.length) {
+    cards = SEED.map(function(s) {
+      return { jp:s.jp, reading:s.r, en:s.en, type:'vocab', lesson:s.l,
+               srs:0, nextReview:Date.now(), id:Math.random().toString(36).slice(2),
+               example_jp:'', example_en:'', customTags:[], typeOverride:'' };
+    });
+    await saveCards();
+  }
+  // Migrate: update jp fields to kanji, add missing fields
+  var migrated = 0;
+  cards.forEach(function(c) {
+    // Add missing fields for old stored cards
+    if (!c.customTags)   { c.customTags   = []; migrated++; }
+    if (c.typeOverride === undefined) { c.typeOverride = ''; migrated++; }
+    // Update jp to kanji where available
+    var kanji = KANJI_MAP[c.reading];
+    if (kanji && c.jp !== kanji) { c.jp = kanji; migrated++; }
+  });
+  if (migrated > 0) await saveCards();
+
+  // Restore customTagsList from stored cards
+  var tagSet = new Set();
+  cards.forEach(function(c){ (c.customTags||[]).forEach(function(t){ tagSet.add(t); }); });
+  customTagsList = Array.from(tagSet).sort();
+
+  selectedLessons = new Set(getAllLessons());
+  updateCardCount();
+}
+
+// ── TAB NAVIGATION ─────────────────────────────────────────────────────────
+function showTab(n) {
+  ['input','list','quiz','stats','settings'].forEach(function(t) {
+    document.getElementById('tab-'+t).style.display = t===n ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(function(el, i) {
+    el.classList.toggle('active', ['input','list','quiz','stats','settings'][i] === n);
+  });
+  if (n === 'list')     { renderList(); }
+  if (n === 'quiz')     { buildLessonFilterUI(); initQuiz(); }
+  if (n === 'stats')    { renderStats(); }
+  if (n === 'settings') { loadSettingsUI(); }
+}
+
+// ── LESSON HELPERS ─────────────────────────────────────────────────────────
+function getAllLessons() {
+  var seen = {}, out = [];
+  for (var i = 0; i < cards.length; i++) {
+    var l = cards[i].lesson;
+    if (l && !seen[l]) { seen[l] = 1; out.push(l); }
+  }
+  out.sort(function(a,b){ return parseInt(a.replace(/\D/g,'')) - parseInt(b.replace(/\D/g,'')); });
+  return out;
+}
+
+function buildLessonFilterUI() {
+  var el = document.getElementById('quizLessonFilters');
+  if (!el) return;
+  el.innerHTML = '';
+  getAllLessons().forEach(function(l) {
+    var btn = document.createElement('button');
+    btn.className = 'ql-btn' + (selectedLessons.has(l) ? ' active' : '');
+    btn.textContent = l;
+    btn.addEventListener('click', function(){ toggleLesson(btn, l); });
+    el.appendChild(btn);
+  });
+}
+
+
+function toggleLesson(btn, l) {
+  if (selectedLessons.has(l)) {
+    selectedLessons.delete(l);
+    btn.classList.remove('active');
+  } else {
+    selectedLessons.add(l);
+    btn.classList.add('active');
+  }
+  rebuildAndStart();
+}
+
+function selectAllLessons() {
+  selectedLessons = new Set(getAllLessons());
+  buildLessonFilterUI();
+  rebuildAndStart();
+}
+function clearLessons() {
+  selectedLessons = new Set();
+  buildLessonFilterUI();
+  rebuildAndStart();
+}
+function selectMNN1() {
+  selectedLessons = new Set();
+  getAllLessons().forEach(function(l){ var n=parseInt(l.replace(/\D/g,'')); if(n>=1&&n<=25) selectedLessons.add(l); });
+  buildLessonFilterUI();
+  rebuildAndStart();
+}
+function selectMNN2() {
+  selectedLessons = new Set();
+  getAllLessons().forEach(function(l){ var n=parseInt(l.replace(/\D/g,'')); if(n>=26) selectedLessons.add(l); });
+  buildLessonFilterUI();
+  rebuildAndStart();
+}
+
+// ── TYPE HELPERS ───────────────────────────────────────────────────────────
+var IADJ_SET = new Set(['おおきい','ちいさい','あたらしい','ふるい','いい','よい','わるい','あつい','さむい','つめたい','むずかしい','やさしい','たかい','やすい','ひくい','おもしろい','おいしい','いそがしい','たのしい','しろい','くろい','あかい','あおい','ちかい','とおい','はやい','おそい','おおい','すくない','あたたかい','すずしい','あまい','からい','おもい','かるい','ねむい','つよい','よわい','さびしい','ひろい','せまい','ひどい','こわい','かわいい','うれしい','かなしい','はずかしい','おかしい','うるさい','かたい','やわらかい','ほそい','ふとい','きたない','きびしい','こい','うすい','こまかい','ただしい','めずらしい','わかい','ながい','みじかい','あかるい','くらい','あぶない','めずらしい','えらい']);
+var NADJ_SET = new Set(['きれい','しずか','にぎやか','ゆうめい','しんせつ','げんき','べんり','すてき','ひま','たいせつ','たいへん','むだ','ふべん','おなじ','すごい','じょうず','へた','すき','きらい','いろいろ','じょうぶ','しあわせ','まじめ','ねっしん','あんぜん','ていねい','しんぱい','きけん','ひつよう','らく','だいじょうぶ','ふくざつ','じゃま','だめ','しんせつ','ゆうめい','とくい','にがて','へん']);
+
+// ── VERB CONJUGATION DATA ──────────────────────────────────────────────────
+var VERB_DATA = {
+  'おきます': {plain:'おく',pot:'おける',te:'おいて',ta:'おいた',nai:'おかない',vol:'おこう',grp:1},
+  'ねます': {plain:'ねる',pot:'ねられる',te:'ねて',ta:'ねた',nai:'ねない',vol:'ねよう',grp:2},
+  'はたらきます': {plain:'はたらく',pot:'はたらける',te:'はたらいて',ta:'はたらいた',nai:'はたらかない',vol:'はたらこう',grp:1},
+  'やすみます': {plain:'やすむ',pot:'やすめる',te:'やすんで',ta:'やすんだ',nai:'やすまない',vol:'やすもう',grp:1},
+  'べんきょうします': {plain:'べんきょうする',pot:'べんきょうできる',te:'べんきょうして',ta:'べんきょうした',nai:'べんきょうしない',vol:'べんきょうしよう',grp:3},
+  'おわります': {plain:'おわる',pot:'おわれる',te:'おわって',ta:'おわった',nai:'おわらない',vol:'おわろう',grp:1},
+  'いきます': {plain:'いく',pot:'いける',te:'いって',ta:'いった',nai:'いかない',vol:'いこう',grp:1},
+  'きます': {plain:'くる',pot:'こられる',te:'きて',ta:'きた',nai:'こない',vol:'こよう',grp:3},
+  'かえります': {plain:'かえる',pot:'かえれる',te:'かえって',ta:'かえった',nai:'かえらない',vol:'かえろう',grp:1},
+  'たべます': {plain:'たべる',pot:'たべられる',te:'たべて',ta:'たべた',nai:'たべない',vol:'たべよう',grp:2},
+  'のみます': {plain:'のむ',pot:'のめる',te:'のんで',ta:'のんだ',nai:'のまない',vol:'のもう',grp:1},
+  'みます': {plain:'みる',pot:'みられる',te:'みて',ta:'みた',nai:'みない',vol:'みよう',grp:2},
+  'ききます': {plain:'きく',pot:'きける',te:'きいて',ta:'きいた',nai:'きかない',vol:'きこう',grp:1},
+  'よみます': {plain:'よむ',pot:'よめる',te:'よんで',ta:'よんだ',nai:'よまない',vol:'よもう',grp:1},
+  'かきます': {plain:'かく',pot:'かける',te:'かいて',ta:'かいた',nai:'かかない',vol:'かこう',grp:1},
+  'かいます': {plain:'かう',pot:'かえる',te:'かって',ta:'かった',nai:'かわない',vol:'かおう',grp:1},
+  'します': {plain:'する',pot:'できる',te:'して',ta:'した',nai:'しない',vol:'しよう',grp:3},
+  'あいます': {plain:'あう',pot:'あえる',te:'あって',ta:'あった',nai:'あわない',vol:'あおう',grp:1},
+  'あげます': {plain:'あげる',pot:'あげられる',te:'あげて',ta:'あげた',nai:'あげない',vol:'あげよう',grp:2},
+  'もらいます': {plain:'もらう',pot:'もらえる',te:'もらって',ta:'もらった',nai:'もらわない',vol:'もらおう',grp:1},
+  'かします': {plain:'かす',pot:'かせる',te:'かして',ta:'かした',nai:'かさない',vol:'かそう',grp:1},
+  'かります': {plain:'かりる',pot:'かりられる',te:'かりて',ta:'かりた',nai:'かりない',vol:'かりよう',grp:1},
+  'おしえます': {plain:'おしえる',pot:'おしえられる',te:'おしえて',ta:'おしえた',nai:'おしえない',vol:'おしえよう',grp:2},
+  'ならいます': {plain:'ならう',pot:'ならえる',te:'ならって',ta:'ならった',nai:'ならわない',vol:'ならおう',grp:1},
+  'わかります': {plain:'わかる',pot:'わかれる',te:'わかって',ta:'わかった',nai:'わからない',vol:'わかろう',grp:1},
+  'います': {plain:'いる',pot:'いられる',te:'いて',ta:'いた',nai:'いない',vol:'いよう',grp:2},
+  'あります': {plain:'ある',pot:'(ない)',te:'あって',ta:'あった',nai:'ない',vol:'あろう',grp:1},
+  'かかります': {plain:'かかる',pot:'かかれる',te:'かかって',ta:'かかった',nai:'かからない',vol:'かかろう',grp:1},
+  'あそびます': {plain:'あそぶ',pot:'あそべる',te:'あそんで',ta:'あそんだ',nai:'あそばない',vol:'あそぼう',grp:1},
+  'およぎます': {plain:'およぐ',pot:'およげる',te:'およいで',ta:'およいだ',nai:'およがない',vol:'およごう',grp:1},
+  'つかれます': {plain:'つかれる',pot:'つかれられる',te:'つかれて',ta:'つかれた',nai:'つかれない',vol:'つかれよう',grp:2},
+  'だします': {plain:'だす',pot:'だせる',te:'だして',ta:'だした',nai:'ださない',vol:'だそう',grp:1},
+  'はいります': {plain:'はいる',pot:'はいれる',te:'はいって',ta:'はいった',nai:'はいらない',vol:'はいろう',grp:1},
+  'でます': {plain:'でる',pot:'でられる',te:'でて',ta:'でた',nai:'でない',vol:'でよう',grp:2},
+  'けっこんします': {plain:'けっこんする',pot:'けっこんできる',te:'けっこんして',ta:'けっこんした',nai:'けっこんしない',vol:'けっこんしよう',grp:3},
+  'かいものします': {plain:'かいものする',pot:'かいものできる',te:'かいものして',ta:'かいものした',nai:'かいものしない',vol:'かいものしよう',grp:3},
+  'しょくじします': {plain:'しょくじする',pot:'しょくじできる',te:'しょくじして',ta:'しょくじした',nai:'しょくじしない',vol:'しょくじしよう',grp:3},
+  'さんぽします': {plain:'さんぽする',pot:'さんぽできる',te:'さんぽして',ta:'さんぽした',nai:'さんぽしない',vol:'さんぽしよう',grp:3},
+  'むかえます': {plain:'むかえる',pot:'むかえられる',te:'むかえて',ta:'むかえた',nai:'むかえない',vol:'むかえよう',grp:2},
+  'つけます': {plain:'つける',pot:'つけられる',te:'つけて',ta:'つけた',nai:'つけない',vol:'つけよう',grp:2},
+  'けします': {plain:'けす',pot:'けせる',te:'けして',ta:'けした',nai:'けさない',vol:'けそう',grp:1},
+  'あけます': {plain:'あける',pot:'あけられる',te:'あけて',ta:'あけた',nai:'あけない',vol:'あけよう',grp:2},
+  'しめます': {plain:'しめる',pot:'しめられる',te:'しめて',ta:'しめた',nai:'しめない',vol:'しめよう',grp:2},
+  'いそぎます': {plain:'いそぐ',pot:'いそげる',te:'いそいで',ta:'いそいだ',nai:'いそがない',vol:'いそごう',grp:1},
+  'まちます': {plain:'まつ',pot:'まてる',te:'まって',ta:'まった',nai:'またない',vol:'まとう',grp:1},
+  'とめます': {plain:'とめる',pot:'とめられる',te:'とめて',ta:'とめた',nai:'とめない',vol:'とめよう',grp:2},
+  'まがります': {plain:'まがる',pot:'まがれる',te:'まがって',ta:'まがった',nai:'まがらない',vol:'まがろう',grp:1},
+  'もちます': {plain:'もつ',pot:'もてる',te:'もって',ta:'もった',nai:'もたない',vol:'もとう',grp:1},
+  'とります': {plain:'とる',pot:'とれる',te:'とって',ta:'とった',nai:'とらない',vol:'とろう',grp:1},
+  'てつだいます': {plain:'てつだう',pot:'てつだえる',te:'てつだって',ta:'てつだった',nai:'てつだわない',vol:'てつだおう',grp:1},
+  'よびます': {plain:'よぶ',pot:'よべる',te:'よんで',ta:'よんだ',nai:'よばない',vol:'よぼう',grp:1},
+  'はなします': {plain:'はなす',pot:'はなせる',te:'はなして',ta:'はなした',nai:'はなさない',vol:'はなそう',grp:1},
+  'みせます': {plain:'みせる',pot:'みせられる',te:'みせて',ta:'みせた',nai:'みせない',vol:'みせよう',grp:2},
+  'はじめます': {plain:'はじめる',pot:'はじめられる',te:'はじめて',ta:'はじめた',nai:'はじめない',vol:'はじめよう',grp:2},
+  'ふります': {plain:'ふる',pot:'ふれる',te:'ふって',ta:'ふった',nai:'ふらない',vol:'ふろう',grp:1},
+  'たちます': {plain:'たつ',pot:'たてる',te:'たって',ta:'たった',nai:'たたない',vol:'たとう',grp:1},
+  'すわります': {plain:'すわる',pot:'すわれる',te:'すわって',ta:'すわった',nai:'すわらない',vol:'すわろう',grp:1},
+  'つかいます': {plain:'つかう',pot:'つかえる',te:'つかって',ta:'つかった',nai:'つかわない',vol:'つかおう',grp:1},
+  'つくります': {plain:'つくる',pot:'つくれる',te:'つくって',ta:'つくった',nai:'つくらない',vol:'つくろう',grp:1},
+  'うります': {plain:'うる',pot:'うれる',te:'うって',ta:'うった',nai:'うらない',vol:'うろう',grp:1},
+  'しります': {plain:'しる',pot:'しれる',te:'しって',ta:'しった',nai:'しらない',vol:'しろう',grp:1},
+  'すみます': {plain:'すむ',pot:'すめる',te:'すんで',ta:'すんだ',nai:'すまない',vol:'すもう',grp:1},
+  'けんきゅうします': {plain:'けんきゅうする',pot:'けんきゅうできる',te:'けんきゅうして',ta:'けんきゅうした',nai:'けんきゅうしない',vol:'けんきゅうしよう',grp:3},
+  'のります': {plain:'のる',pot:'のれる',te:'のって',ta:'のった',nai:'のらない',vol:'のろう',grp:1},
+  'おります': {plain:'おりる',pot:'おりられる',te:'おりて',ta:'おりた',nai:'おりない',vol:'おりよう',grp:1},
+  'のりかえます': {plain:'のりかえる',pot:'のりかえられる',te:'のりかえて',ta:'のりかえた',nai:'のりかえない',vol:'のりかえよう',grp:2},
+  'あびます': {plain:'あびる',pot:'あびられる',te:'あびて',ta:'あびた',nai:'あびない',vol:'あびよう',grp:2},
+  'いれます': {plain:'いれる',pot:'いれられる',te:'いれて',ta:'いれた',nai:'いれない',vol:'いれよう',grp:2},
+  'やめます': {plain:'やめる',pot:'やめられる',te:'やめて',ta:'やめた',nai:'やめない',vol:'やめよう',grp:2},
+  'おします': {plain:'おす',pot:'おせる',te:'おして',ta:'おした',nai:'おさない',vol:'おそう',grp:1},
+  'おぼえます': {plain:'おぼえる',pot:'おぼえられる',te:'おぼえて',ta:'おぼえた',nai:'おぼえない',vol:'おぼえよう',grp:2},
+  'わすれます': {plain:'わすれる',pot:'わすれられる',te:'わすれて',ta:'わすれた',nai:'わすれない',vol:'わすれよう',grp:2},
+  'なくします': {plain:'なくす',pot:'なくせる',te:'なくして',ta:'なくした',nai:'なくさない',vol:'なくそう',grp:1},
+  'はらいます': {plain:'はらう',pot:'はらえる',te:'はらって',ta:'はらった',nai:'はらわない',vol:'はらおう',grp:1},
+  'かえします': {plain:'かえす',pot:'かえせる',te:'かえして',ta:'かえした',nai:'かえさない',vol:'かえそう',grp:1},
+  'でかけます': {plain:'でかける',pot:'でかけられる',te:'でかけて',ta:'でかけた',nai:'でかけない',vol:'でかけよう',grp:2},
+  'ぬぎます': {plain:'ぬぐ',pot:'ぬげる',te:'ぬいで',ta:'ぬいだ',nai:'ぬがない',vol:'ぬごう',grp:1},
+  'しんぱいします': {plain:'しんぱいする',pot:'しんぱいできる',te:'しんぱいして',ta:'しんぱいした',nai:'しんぱいしない',vol:'しんぱいしよう',grp:3},
+  'できます': {plain:'できる',pot:'(できる自体が可能形)',te:'できて',ta:'できた',nai:'できない',vol:'できよう',grp:2},
+  'あらいます': {plain:'あらう',pot:'あらえる',te:'あらって',ta:'あらった',nai:'あらわない',vol:'あらおう',grp:1},
+  'ひきます': {plain:'ひく',pot:'ひける',te:'ひいて',ta:'ひいた',nai:'ひかない',vol:'ひこう',grp:1},
+  'うたいます': {plain:'うたう',pot:'うたえる',te:'うたって',ta:'うたった',nai:'うたわない',vol:'うたおう',grp:1},
+  'あつめます': {plain:'あつめる',pot:'あつめられる',te:'あつめて',ta:'あつめた',nai:'あつめない',vol:'あつめよう',grp:2},
+  'すてます': {plain:'すてる',pot:'すてられる',te:'すてて',ta:'すてた',nai:'すてない',vol:'すてよう',grp:2},
+  'かえます': {plain:'かえる',pot:'かえられる',te:'かえて',ta:'かえた',nai:'かえない',vol:'かえよう',grp:2},
+  'うんてんします': {plain:'うんてんする',pot:'うんてんできる',te:'うんてんして',ta:'うんてんした',nai:'うんてんしない',vol:'うんてんしよう',grp:3},
+  'よやくします': {plain:'よやくする',pot:'よやくできる',te:'よやくして',ta:'よやくした',nai:'よやくしない',vol:'よやくしよう',grp:3},
+  'けんがくします': {plain:'けんがくする',pot:'けんがくできる',te:'けんがくして',ta:'けんがくした',nai:'けんがくしない',vol:'けんがくしよう',grp:3},
+  'のぼります': {plain:'のぼる',pot:'のぼれる',te:'のぼって',ta:'のぼった',nai:'のぼらない',vol:'のぼろう',grp:1},
+  'とまります': {plain:'とまる',pot:'とまれる',te:'とまって',ta:'とまった',nai:'とまらない',vol:'とまろう',grp:1},
+  'そうじします': {plain:'そうじする',pot:'そうじできる',te:'そうじして',ta:'そうじした',nai:'そうじしない',vol:'そうじしよう',grp:3},
+  'せんたくします': {plain:'せんたくする',pot:'せんたくできる',te:'せんたくして',ta:'せんたくした',nai:'せんたくしない',vol:'せんたくしよう',grp:3},
+  'れんしゅうします': {plain:'れんしゅうする',pot:'れんしゅうできる',te:'れんしゅうして',ta:'れんしゅうした',nai:'れんしゅうしない',vol:'れんしゅうしよう',grp:3},
+  'なります': {plain:'なる',pot:'なれる',te:'なって',ta:'なった',nai:'ならない',vol:'なろう',grp:1},
+  'いります': {plain:'いる',pot:'いれる',te:'いって',ta:'いった',nai:'いらない',vol:'いろう',grp:1},
+  'しらべます': {plain:'しらべる',pot:'しらべられる',te:'しらべて',ta:'しらべた',nai:'しらべない',vol:'しらべよう',grp:2},
+  'なおします': {plain:'なおす',pot:'なおせる',te:'なおして',ta:'なおした',nai:'なおさない',vol:'なおそう',grp:1},
+  'しゅうりします': {plain:'しゅうりする',pot:'しゅうりできる',te:'しゅうりして',ta:'しゅうりした',nai:'しゅうりしない',vol:'しゅうりしよう',grp:3},
+  'でんわします': {plain:'でんわする',pot:'でんわできる',te:'でんわして',ta:'でんわした',nai:'でんわしない',vol:'でんわしよう',grp:3},
+  'おもいます': {plain:'おもう',pot:'おもえる',te:'おもって',ta:'おもった',nai:'おもわない',vol:'おもおう',grp:1},
+  'いいます': {plain:'いう',pot:'いえる',te:'いって',ta:'いった',nai:'いわない',vol:'いおう',grp:1},
+  'たります': {plain:'たる',pot:'たれる',te:'たって',ta:'たった',nai:'たらない',vol:'たろう',grp:1},
+  'かちます': {plain:'かつ',pot:'かてる',te:'かって',ta:'かった',nai:'かたない',vol:'かとう',grp:1},
+  'まけます': {plain:'まける',pot:'まけられる',te:'まけて',ta:'まけた',nai:'まけない',vol:'まけよう',grp:2},
+  'かぶります': {plain:'かぶる',pot:'かぶれる',te:'かぶって',ta:'かぶった',nai:'かぶらない',vol:'かぶろう',grp:1},
+  'かけます': {plain:'かける',pot:'かけられる',te:'かけて',ta:'かけた',nai:'かけない',vol:'かけよう',grp:2},
+  'うまれます': {plain:'うまれる',pot:'うまれられる',te:'うまれて',ta:'うまれた',nai:'うまれない',vol:'うまれよう',grp:2},
+  'まわします': {plain:'まわす',pot:'まわせる',te:'まわして',ta:'まわした',nai:'まわさない',vol:'まわそう',grp:1},
+  'さわります': {plain:'さわる',pot:'さわれる',te:'さわって',ta:'さわった',nai:'さわらない',vol:'さわろう',grp:1},
+  'うごきます': {plain:'うごく',pot:'うごける',te:'うごいて',ta:'うごいた',nai:'うごかない',vol:'うごこう',grp:1},
+  'あるきます': {plain:'あるく',pot:'あるける',te:'あるいて',ta:'あるいた',nai:'あるかない',vol:'あるこう',grp:1},
+  'わたります': {plain:'わたる',pot:'わたれる',te:'わたって',ta:'わたった',nai:'わたらない',vol:'わたろう',grp:1},
+  'ひっこします': {plain:'ひっこしする',pot:'ひっこしできる',te:'ひっこしして',ta:'ひっこしした',nai:'ひっこししない',vol:'ひっこししよう',grp:3},
+  'くれます': {plain:'くれる',pot:'くれられる',te:'くれて',ta:'くれた',nai:'くれない',vol:'くれよう',grp:2},
+  'おくります': {plain:'おくる',pot:'おくれる',te:'おくって',ta:'おくった',nai:'おくらない',vol:'おくろう',grp:1},
+  'しょうかいします': {plain:'しょうかいする',pot:'しょうかいできる',te:'しょうかいして',ta:'しょうかいした',nai:'しょうかいしない',vol:'しょうかいしよう',grp:3},
+  'あんないします': {plain:'あんないする',pot:'あんないできる',te:'あんないして',ta:'あんないした',nai:'あんないしない',vol:'あんないしよう',grp:3},
+  'せつめいします': {plain:'せつめいする',pot:'せつめいできる',te:'せつめいして',ta:'せつめいした',nai:'せつめいしない',vol:'せつめいしよう',grp:3},
+  'かんがえます': {plain:'かんがえる',pot:'かんがえられる',te:'かんがえて',ta:'かんがえた',nai:'かんがえない',vol:'かんがえよう',grp:2},
+  'つきます': {plain:'つく',pot:'つける',te:'ついて',ta:'ついた',nai:'つかない',vol:'つこう',grp:1},
+  'りゅうがくします': {plain:'りゅうがくする',pot:'りゅうがくできる',te:'りゅうがくして',ta:'りゅうがくした',nai:'りゅうがくしない',vol:'りゅうがくしよう',grp:3},
+  'さがします': {plain:'さがす',pot:'さがせる',te:'さがして',ta:'さがした',nai:'さがさない',vol:'さがそう',grp:1},
+  'おくれます': {plain:'おくれる',pot:'おくれられる',te:'おくれて',ta:'おくれた',nai:'おくれない',vol:'おくれよう',grp:2},
+  'やります': {plain:'やる',pot:'やれる',te:'やって',ta:'やった',nai:'やらない',vol:'やろう',grp:1},
+  'さんかします': {plain:'さんかする',pot:'さんかできる',te:'さんかして',ta:'さんかした',nai:'さんかしない',vol:'さんかしよう',grp:3},
+  'もうしこみます': {plain:'もうしこむ',pot:'もうしこめる',te:'もうしこんで',ta:'もうしこんだ',nai:'もうしこまない',vol:'もうしこもう',grp:1},
+  'たてます': {plain:'たてる',pot:'たてられる',te:'たてて',ta:'たてた',nai:'たてない',vol:'たてよう',grp:2},
+  'はしります': {plain:'はしる',pot:'はしれる',te:'はしって',ta:'はしった',nai:'はしらない',vol:'はしろう',grp:1},
+  'みえます': {plain:'みえる',pot:'みえられる',te:'みえて',ta:'みえた',nai:'みえない',vol:'みえよう',grp:2},
+  'きこえます': {plain:'きこえる',pot:'きこえられる',te:'きこえて',ta:'きこえた',nai:'きこえない',vol:'きこえよう',grp:2},
+  'ひらきます': {plain:'ひらく',pot:'ひらける',te:'ひらいて',ta:'ひらいた',nai:'ひらかない',vol:'ひらこう',grp:1},
+  'おどります': {plain:'おどる',pot:'おどれる',te:'おどって',ta:'おどった',nai:'おどらない',vol:'おどろう',grp:1},
+  'えらびます': {plain:'えらぶ',pot:'えらべる',te:'えらんで',ta:'えらんだ',nai:'えらばない',vol:'えらぼう',grp:1},
+  'ちがいます': {plain:'ちがう',pot:'ちがえる',te:'ちがって',ta:'ちがった',nai:'ちがわない',vol:'ちがおう',grp:1},
+  'あきます': {plain:'あく',pot:'あける',te:'あいて',ta:'あいた',nai:'あかない',vol:'あこう',grp:1},
+  'しまります': {plain:'しまる',pot:'しまれる',te:'しまって',ta:'しまった',nai:'しまらない',vol:'しまろう',grp:1},
+  'こわれます': {plain:'こわれる',pot:'こわれられる',te:'こわれて',ta:'こわれた',nai:'こわれない',vol:'こわれよう',grp:2},
+  'われます': {plain:'われる',pot:'われられる',te:'われて',ta:'われた',nai:'われない',vol:'われよう',grp:2},
+  'おれます': {plain:'おれる',pot:'おれられる',te:'おれて',ta:'おれた',nai:'おれない',vol:'おれよう',grp:2},
+  'やぶれます': {plain:'やぶれる',pot:'やぶれられる',te:'やぶれて',ta:'やぶれた',nai:'やぶれない',vol:'やぶれよう',grp:2},
+  'よごれます': {plain:'よごれる',pot:'よごれられる',te:'よごれて',ta:'よごれた',nai:'よごれない',vol:'よごれよう',grp:2},
+  'はずれます': {plain:'はずれる',pot:'はずれられる',te:'はずれて',ta:'はずれた',nai:'はずれない',vol:'はずれよう',grp:2},
+  'まちがえます': {plain:'まちがえる',pot:'まちがえられる',te:'まちがえて',ta:'まちがえた',nai:'まちがえない',vol:'まちがえよう',grp:2},
+  'おとします': {plain:'おとす',pot:'おとせる',te:'おとして',ta:'おとした',nai:'おとさない',vol:'おとそう',grp:1},
+  'はります': {plain:'はる',pot:'はれる',te:'はって',ta:'はった',nai:'はらない',vol:'はろう',grp:1},
+  'かざります': {plain:'かざる',pot:'かざれる',te:'かざって',ta:'かざった',nai:'かざらない',vol:'かざろう',grp:1},
+  'ならべます': {plain:'ならべる',pot:'ならべられる',te:'ならべて',ta:'ならべた',nai:'ならべない',vol:'ならべよう',grp:2},
+  'うえます': {plain:'うえる',pot:'うえられる',te:'うえて',ta:'うえた',nai:'うえない',vol:'うえよう',grp:2},
+  'もどします': {plain:'もどす',pot:'もどせる',te:'もどして',ta:'もどした',nai:'もどさない',vol:'もどそう',grp:1},
+  'きめます': {plain:'きめる',pot:'きめられる',te:'きめて',ta:'きめた',nai:'きめない',vol:'きめよう',grp:2},
+  'しらせます': {plain:'しらせる',pot:'しらせられる',te:'しらせて',ta:'しらせた',nai:'しらせない',vol:'しらせよう',grp:2},
+  'そうだんします': {plain:'そうだんする',pot:'そうだんできる',te:'そうだんして',ta:'そうだんした',nai:'そうだんしない',vol:'そうだんしよう',grp:3},
+  'よしゅうします': {plain:'よしゅうする',pot:'よしゅうできる',te:'よしゅうして',ta:'よしゅうした',nai:'よしゅうしない',vol:'よしゅうしよう',grp:3},
+  'ふくしゅうします': {plain:'ふくしゅうする',pot:'ふくしゅうできる',te:'ふくしゅうして',ta:'ふくしゅうした',nai:'ふくしゅうしない',vol:'ふくしゅうしよう',grp:3},
+  'つづけます': {plain:'つづける',pot:'つづけられる',te:'つづけて',ta:'つづけた',nai:'つづけない',vol:'つづけよう',grp:2},
+  'みつけます': {plain:'みつける',pot:'みつけられる',te:'みつけて',ta:'みつけた',nai:'みつけない',vol:'みつけよう',grp:2},
+  'うけます': {plain:'うける',pot:'うけられる',te:'うけて',ta:'うけた',nai:'うけない',vol:'うけよう',grp:2},
+  'にゅうがくします': {plain:'にゅうがくする',pot:'にゅうがくできる',te:'にゅうがくして',ta:'にゅうがくした',nai:'にゅうがくしない',vol:'にゅうがくしよう',grp:3},
+  'そつぎょうします': {plain:'そつぎょうする',pot:'そつぎょうできる',te:'そつぎょうして',ta:'そつぎょうした',nai:'そつぎょうしない',vol:'そつぎょうしよう',grp:3},
+  'しゅっせきします': {plain:'しゅっせきする',pot:'しゅっせきできる',te:'しゅっせきして',ta:'しゅっせきした',nai:'しゅっせきしない',vol:'しゅっせきしよう',grp:3},
+  'きゅうけいします': {plain:'きゅうけいする',pot:'きゅうけいできる',te:'きゅうけいして',ta:'きゅうけいした',nai:'きゅうけいしない',vol:'きゅうけいしよう',grp:3},
+  'はじまります': {plain:'はじまる',pot:'はじまれる',te:'はじまって',ta:'はじまった',nai:'はじまらない',vol:'はじまろう',grp:1},
+  'うんどうします': {plain:'うんどうする',pot:'うんどうできる',te:'うんどうして',ta:'うんどうした',nai:'うんどうしない',vol:'うんどうしよう',grp:3},
+  'せいこうします': {plain:'せいこうする',pot:'せいこうできる',te:'せいこうして',ta:'せいこうした',nai:'せいこうしない',vol:'せいこうしよう',grp:3},
+  'しっぱいします': {plain:'しっぱいする',pot:'しっぱいできる',te:'しっぱいして',ta:'しっぱいした',nai:'しっぱいしない',vol:'しっぱいしよう',grp:3},
+  'ごうかくします': {plain:'ごうかくする',pot:'ごうかくできる',te:'ごうかくして',ta:'ごうかくした',nai:'ごうかくしない',vol:'ごうかくしよう',grp:3},
+  'もどります': {plain:'もどる',pot:'もどれる',te:'もどって',ta:'もどった',nai:'もどらない',vol:'もどろう',grp:1},
+  'やみます': {plain:'やむ',pot:'やめる',te:'やんで',ta:'やんだ',nai:'やまない',vol:'やもう',grp:1},
+  'はれます': {plain:'はれる',pot:'はれられる',te:'はれて',ta:'はれた',nai:'はれない',vol:'はれよう',grp:2},
+  'くもります': {plain:'くもる',pot:'くもれる',te:'くもって',ta:'くもった',nai:'くもらない',vol:'くもろう',grp:1},
+  'ふきます': {plain:'ふく',pot:'ふける',te:'ふいて',ta:'ふいた',nai:'ふかない',vol:'ふこう',grp:1},
+  'なおります': {plain:'なおる',pot:'なおれる',te:'なおって',ta:'なおった',nai:'なおらない',vol:'なおろう',grp:1},
+  'つづきます': {plain:'つづく',pot:'つづける',te:'つづいて',ta:'つづいた',nai:'つづかない',vol:'つづこう',grp:1},
+  'ひやします': {plain:'ひやす',pot:'ひやせる',te:'ひやして',ta:'ひやした',nai:'ひやさない',vol:'ひやそう',grp:1},
+  'にげます': {plain:'にげる',pot:'にげられる',te:'にげて',ta:'にげた',nai:'にげない',vol:'にげよう',grp:2},
+  'さわぎます': {plain:'さわぐ',pot:'さわげる',te:'さわいで',ta:'さわいだ',nai:'さわがない',vol:'さわごう',grp:1},
+  'あきらめます': {plain:'あきらめる',pot:'あきらめられる',te:'あきらめて',ta:'あきらめた',nai:'あきらめない',vol:'あきらめよう',grp:2},
+  'なげます': {plain:'なげる',pot:'なげられる',te:'なげて',ta:'なげた',nai:'なげない',vol:'なげよう',grp:2},
+  'まもります': {plain:'まもる',pot:'まもれる',te:'まもって',ta:'まもった',nai:'まもらない',vol:'まもろう',grp:1},
+  'さげます': {plain:'さげる',pot:'さげられる',te:'さげて',ta:'さげた',nai:'さげない',vol:'さげよう',grp:2},
+  'つたえます': {plain:'つたえる',pot:'つたえられる',te:'つたえて',ta:'つたえた',nai:'つたえない',vol:'つたえよう',grp:2},
+  'ちゅういします': {plain:'ちゅういする',pot:'ちゅういできる',te:'ちゅういして',ta:'ちゅういした',nai:'ちゅういしない',vol:'ちゅういしよう',grp:3},
+  'はずします': {plain:'はずす',pot:'はずせる',te:'はずして',ta:'はずした',nai:'はずさない',vol:'はずそう',grp:1},
+  'みがきます': {plain:'みがく',pot:'みがける',te:'みがいて',ta:'みがいた',nai:'みがかない',vol:'みがこう',grp:1},
+  'くみたてます': {plain:'くみたてる',pot:'くみたてられる',te:'くみたてて',ta:'くみたてた',nai:'くみたてない',vol:'くみたてよう',grp:2},
+  'きがつきます': {plain:'きがつく',pot:'きがつける',te:'きがついて',ta:'きがついた',nai:'きがつかない',vol:'きがつこう',grp:1},
+  'みつかります': {plain:'みつかる',pot:'みつかれる',te:'みつかって',ta:'みつかった',nai:'みつからない',vol:'みつかろう',grp:1},
+  'しつもんします': {plain:'しつもんする',pot:'しつもんできる',te:'しつもんして',ta:'しつもんした',nai:'しつもんしない',vol:'しつもんしよう',grp:3},
+  'さきます': {plain:'さく',pot:'さける',te:'さいて',ta:'さいた',nai:'さかない',vol:'さこう',grp:1},
+  'かわります': {plain:'かわる',pot:'かわれる',te:'かわって',ta:'かわった',nai:'かわらない',vol:'かわろう',grp:1},
+  'こまります': {plain:'こまる',pot:'こまれる',te:'こまって',ta:'こまった',nai:'こまらない',vol:'こまろう',grp:1},
+  'ひろいます': {plain:'ひろう',pot:'ひろえる',te:'ひろって',ta:'ひろった',nai:'ひろわない',vol:'ひろおう',grp:1},
+  'とどきます': {plain:'とどく',pot:'とどける',te:'とどいて',ta:'とどいた',nai:'とどかない',vol:'とどこう',grp:1},
+  'うちます': {plain:'うつ',pot:'うてる',te:'うって',ta:'うった',nai:'うたない',vol:'うとう',grp:1},
+  'ちょきんします': {plain:'ちょきんする',pot:'ちょきんできる',te:'ちょきんして',ta:'ちょきんした',nai:'ちょきんしない',vol:'ちょきんしよう',grp:3},
+  'ふとります': {plain:'ふとる',pot:'ふとれる',te:'ふとって',ta:'ふとった',nai:'ふとらない',vol:'ふとろう',grp:1},
+  'やせます': {plain:'やせる',pot:'やせられる',te:'やせて',ta:'やせた',nai:'やせない',vol:'やせよう',grp:2},
+  'すぎます': {plain:'すぎる',pot:'すぎられる',te:'すぎて',ta:'すぎた',nai:'すぎない',vol:'すぎよう',grp:2},
+  'なれます': {plain:'なれる',pot:'なれられる',te:'なれて',ta:'なれた',nai:'なれない',vol:'なれよう',grp:2},
+  'ほめます': {plain:'ほめる',pot:'ほめられる',te:'ほめて',ta:'ほめた',nai:'ほめない',vol:'ほめよう',grp:2},
+  'さそいます': {plain:'さそう',pot:'さそえる',te:'さそって',ta:'さそった',nai:'さそわない',vol:'さそおう',grp:1},
+  'おこします': {plain:'おこす',pot:'おこせる',te:'おこして',ta:'おこした',nai:'おこさない',vol:'おこそう',grp:1},
+  'しょうたいします': {plain:'しょうたいする',pot:'しょうたいできる',te:'しょうたいして',ta:'しょうたいした',nai:'しょうたいしない',vol:'しょうたいしよう',grp:3},
+  'たのみます': {plain:'たのむ',pot:'たのめる',te:'たのんで',ta:'たのんだ',nai:'たのまない',vol:'たのもう',grp:1},
+  'ふみます': {plain:'ふむ',pot:'ふめる',te:'ふんで',ta:'ふんだ',nai:'ふまない',vol:'ふもう',grp:1},
+  'こわします': {plain:'こわす',pot:'こわせる',te:'こわして',ta:'こわした',nai:'こわさない',vol:'こわそう',grp:1},
+  'よごします': {plain:'よごす',pot:'よごせる',te:'よごして',ta:'よごした',nai:'よごさない',vol:'よごそう',grp:1},
+  'ゆしゅつします': {plain:'ゆしゅつする',pot:'ゆしゅつできる',te:'ゆしゅつして',ta:'ゆしゅつした',nai:'ゆしゅつしない',vol:'ゆしゅつしよう',grp:3},
+  'ゆにゅうします': {plain:'ゆにゅうする',pot:'ゆにゅうできる',te:'ゆにゅうして',ta:'ゆにゅうした',nai:'ゆにゅうしない',vol:'ゆにゅうしよう',grp:3},
+  'ほんやくします': {plain:'ほんやくする',pot:'ほんやくできる',te:'ほんやくして',ta:'ほんやくした',nai:'ほんやくしない',vol:'ほんやくしよう',grp:3},
+  'はつめいします': {plain:'はつめいする',pot:'はつめいできる',te:'はつめいして',ta:'はつめいした',nai:'はつめいしない',vol:'はつめいしよう',grp:3},
+  'はっけんします': {plain:'はっけんする',pot:'はっけんできる',te:'はっけんして',ta:'はっけんした',nai:'はっけんしない',vol:'はっけんしよう',grp:3},
+  'せっけいします': {plain:'せっけいする',pot:'せっけいできる',te:'せっけいして',ta:'せっけいした',nai:'せっけいしない',vol:'せっけいしよう',grp:3},
+  'そだてます': {plain:'そだてる',pot:'そだてられる',te:'そだてて',ta:'そだてた',nai:'そだてない',vol:'そだてよう',grp:2},
+  'はこびます': {plain:'はこぶ',pot:'はこべる',te:'はこんで',ta:'はこんだ',nai:'はこばない',vol:'はこぼう',grp:1},
+  'なくなります': {plain:'なくなる',pot:'なくなれる',te:'なくなって',ta:'なくなった',nai:'なくならない',vol:'なくなろう',grp:1},
+  'にゅういんします': {plain:'にゅういんする',pot:'にゅういんできる',te:'にゅういんして',ta:'にゅういんした',nai:'にゅういんしない',vol:'にゅういんしよう',grp:3},
+  'たいいんします': {plain:'たいいんする',pot:'たいいんできる',te:'たいいんして',ta:'たいいんした',nai:'たいいんしない',vol:'たいいんしよう',grp:3},
+  'きります': {plain:'きる',pot:'きれる',te:'きって',ta:'きった',nai:'きらない',vol:'きろう',grp:1},
+  'こたえます': {plain:'こたえる',pot:'こたえられる',te:'こたえて',ta:'こたえた',nai:'こたえない',vol:'こたえよう',grp:2},
+  'たおれます': {plain:'たおれる',pot:'たおれられる',te:'たおれて',ta:'たおれた',nai:'たおれない',vol:'たおれよう',grp:2},
+  'やけます': {plain:'やける',pot:'やけられる',te:'やけて',ta:'やけた',nai:'やけない',vol:'やけよう',grp:2},
+  'とおります': {plain:'とおる',pot:'とおれる',te:'とおって',ta:'とおった',nai:'とおらない',vol:'とおろう',grp:1},
+  'しにます': {plain:'しぬ',pot:'しねる',te:'しんで',ta:'しんだ',nai:'しなない',vol:'しのう',grp:1},
+  'びっくりします': {plain:'びっくりする',pot:'びっくりできる',te:'びっくりして',ta:'びっくりした',nai:'びっくりしない',vol:'びっくりしよう',grp:3},
+  'がっかりします': {plain:'がっかりする',pot:'がっかりできる',te:'がっかりして',ta:'がっかりした',nai:'がっかりしない',vol:'がっかりしよう',grp:3},
+  'あんしんします': {plain:'あんしんする',pot:'あんしんできる',te:'あんしんして',ta:'あんしんした',nai:'あんしんしない',vol:'あんしんしよう',grp:3},
+  'ちこくします': {plain:'ちこくする',pot:'ちこくできる',te:'ちこくして',ta:'ちこくした',nai:'ちこくしない',vol:'ちこくしよう',grp:3},
+  'そうたいします': {plain:'そうたいする',pot:'そうたいできる',te:'そうたいして',ta:'そうたいした',nai:'そうたいしない',vol:'そうたいしよう',grp:3},
+  'けんかします': {plain:'けんかする',pot:'けんかできる',te:'けんかして',ta:'けんかした',nai:'けんかしない',vol:'けんかしよう',grp:3},
+  'りこんします': {plain:'りこんする',pot:'りこんできる',te:'りこんして',ta:'りこんした',nai:'りこんしない',vol:'りこんしよう',grp:3},
+  'かぞえます': {plain:'かぞえる',pot:'かぞえられる',te:'かぞえて',ta:'かぞえた',nai:'かぞえない',vol:'かぞえよう',grp:2},
+  'はかります': {plain:'はかる',pot:'はかれる',te:'はかって',ta:'はかった',nai:'はからない',vol:'はかろう',grp:1},
+  'たしかめます': {plain:'たしかめる',pot:'たしかめられる',te:'たしかめて',ta:'たしかめた',nai:'たしかめない',vol:'たしかめよう',grp:2},
+  'しゅっぱつします': {plain:'しゅっぱつする',pot:'しゅっぱつできる',te:'しゅっぱつして',ta:'しゅっぱつした',nai:'しゅっぱつしない',vol:'しゅっぱつしよう',grp:3},
+  'とうちゃくします': {plain:'とうちゃくする',pot:'とうちゃくできる',te:'とうちゃくして',ta:'とうちゃくした',nai:'とうちゃくしない',vol:'とうちゃくしよう',grp:3},
+  'よいます': {plain:'よう',pot:'よえる',te:'よって',ta:'よった',nai:'よわない',vol:'よおう',grp:1},
+  'いただきます': {plain:'いただく',pot:'いただける',te:'いただいて',ta:'いただいた',nai:'いただかない',vol:'いただこう',grp:1},
+  'くださいます': {plain:'くださる',pot:'くだされる',te:'くださって',ta:'くださった',nai:'くださらない',vol:'くださろう',grp:1},
+  'とりかえます': {plain:'とりかえる',pot:'とりかえられる',te:'とりかえて',ta:'とりかえた',nai:'とりかえない',vol:'とりかえよう',grp:2},
+  'つつみます': {plain:'つつむ',pot:'つつめる',te:'つつんで',ta:'つつんだ',nai:'つつまない',vol:'つつもう',grp:1},
+  'わかします': {plain:'わかす',pot:'わかせる',te:'わかして',ta:'わかした',nai:'わかさない',vol:'わかそう',grp:1},
+  'まぜます': {plain:'まぜる',pot:'まぜられる',te:'まぜて',ta:'まぜた',nai:'まぜない',vol:'まぜよう',grp:2},
+  'けいさんします': {plain:'けいさんする',pot:'けいさんできる',te:'けいさんして',ta:'けいさんした',nai:'けいさんしない',vol:'けいさんしよう',grp:3},
+  'ふえます': {plain:'ふえる',pot:'ふえられる',te:'ふえて',ta:'ふえた',nai:'ふえない',vol:'ふえよう',grp:2},
+  'へります': {plain:'へる',pot:'へれる',te:'へって',ta:'へった',nai:'へらない',vol:'へろう',grp:1},
+  'あがります': {plain:'あがる',pot:'あがれる',te:'あがって',ta:'あがった',nai:'あがらない',vol:'あがろう',grp:1},
+  'さがります': {plain:'さがる',pot:'さがれる',te:'さがって',ta:'さがった',nai:'さがらない',vol:'さがろう',grp:1},
+  'きれます': {plain:'きれる',pot:'きれられる',te:'きれて',ta:'きれた',nai:'きれない',vol:'きれよう',grp:2},
+  'とれます': {plain:'とれる',pot:'とれられる',te:'とれて',ta:'とれた',nai:'とれない',vol:'とれよう',grp:2},
+  'おちます': {plain:'おちる',pot:'おちられる',te:'おちて',ta:'おちた',nai:'おちない',vol:'おちよう',grp:1},
+  'なきます': {plain:'なく',pot:'なける',te:'ないて',ta:'ないた',nai:'なかない',vol:'なこう',grp:1},
+  'わらいます': {plain:'わらう',pot:'わらえる',te:'わらって',ta:'わらった',nai:'わらわない',vol:'わらおう',grp:1},
+  'かわきます': {plain:'かわく',pot:'かわける',te:'かわいて',ta:'かわいた',nai:'かわかない',vol:'かわこう',grp:1},
+  'ぬれます': {plain:'ぬれる',pot:'ぬれられる',te:'ぬれて',ta:'ぬれた',nai:'ぬれない',vol:'ぬれよう',grp:2},
+  'すべります': {plain:'すべる',pot:'すべれる',te:'すべって',ta:'すべった',nai:'すべらない',vol:'すべろう',grp:1},
+  'ちょうせつします': {plain:'ちょうせつする',pot:'ちょうせつできる',te:'ちょうせつして',ta:'ちょうせつした',nai:'ちょうせつしない',vol:'ちょうせつしよう',grp:3},
+  'あやまります': {plain:'あやまる',pot:'あやまれる',te:'あやまって',ta:'あやまった',nai:'あやまらない',vol:'あやまろう',grp:1},
+  'しんじます': {plain:'しんじる',pot:'しんじられる',te:'しんじて',ta:'しんじた',nai:'しんじない',vol:'しんじよう',grp:2},
+  'ようします': {plain:'ようする',pot:'ようできる',te:'ようして',ta:'ようした',nai:'ようしない',vol:'ようしよう',grp:3},
+  'キャンセルします': {plain:'キャンセルする',pot:'キャンセルできる',te:'キャンセルして',ta:'キャンセルした',nai:'キャンセルしない',vol:'キャンセルしよう',grp:3},
+  'やきます': {plain:'やく',pot:'やける',te:'やいて',ta:'やいた',nai:'やかない',vol:'やこう',grp:1},
+  'わたします': {plain:'わたす',pot:'わたせる',te:'わたして',ta:'わたした',nai:'わたさない',vol:'わたそう',grp:1},
+  'あつまります': {plain:'あつまる',pot:'あつまれる',te:'あつまって',ta:'あつまった',nai:'あつまらない',vol:'あつまろう',grp:1},
+  'わかれます': {plain:'わかれる',pot:'わかれられる',te:'わかれて',ta:'わかれた',nai:'わかれない',vol:'わかれよう',grp:2},
+  'ながいきします': {plain:'ながいきする',pot:'ながいきできる',te:'ながいきして',ta:'ながいきした',nai:'ながいきしない',vol:'ながいきしよう',grp:3},
+  'さします': {plain:'さす',pot:'させる',te:'さして',ta:'さした',nai:'ささない',vol:'さそう',grp:1},
+  'おろします': {plain:'おろす',pot:'おろせる',te:'おろして',ta:'おろした',nai:'おろさない',vol:'おろそう',grp:1},
+  'とどけます': {plain:'とどける',pot:'とどけられる',te:'とどけて',ta:'とどけた',nai:'とどけない',vol:'とどけよう',grp:2},
+  'せわをします': {plain:'せわをする',pot:'せわをできる',te:'せわをして',ta:'せわをした',nai:'せわをしない',vol:'せわをしよう',grp:3},
+  'つとめます': {plain:'つとめる',pot:'つとめられる',te:'つとめて',ta:'つとめた',nai:'つとめない',vol:'つとめよう',grp:2},
+  'すごします': {plain:'すごす',pot:'すごせる',te:'すごして',ta:'すごした',nai:'すごさない',vol:'すごそう',grp:1},
+  'よります': {plain:'よる',pot:'よれる',te:'よって',ta:'よった',nai:'よらない',vol:'よろう',grp:1},
+  'いらっしゃいます': {plain:'いらっしゃる',pot:'いらっしゃれる',te:'いらっしゃって',ta:'いらっしゃった',nai:'いらっしゃらない',vol:'いらっしゃろう',grp:1},
+  'めしあがります': {plain:'めしあがる',pot:'めしあがれる',te:'めしあがって',ta:'めしあがった',nai:'めしあがらない',vol:'めしあがろう',grp:1},
+  'おっしゃいます': {plain:'おっしゃる',pot:'おっしゃれる',te:'おっしゃって',ta:'おっしゃった',nai:'おっしゃらない',vol:'おっしゃろう',grp:1},
+  'なさいます': {plain:'なさる',pot:'なされる',te:'なさって',ta:'なさった',nai:'なさらない',vol:'なさろう',grp:1},
+  'ごらんになります': {plain:'ごらんになる',pot:'ごらんになれる',te:'ごらんになって',ta:'ごらんになった',nai:'ごらんにならない',vol:'ごらんになろう',grp:1},
+  'おめにかかります': {plain:'おめにかかる',pot:'おめにかかれる',te:'おめにかかって',ta:'おめにかかった',nai:'おめにかからない',vol:'おめにかかろう',grp:1},
+  'まいります': {plain:'まいる',pot:'まいれる',te:'まいって',ta:'まいった',nai:'まいらない',vol:'まいろう',grp:1},
+  'もうします': {plain:'もうす',pot:'もうせる',te:'もうして',ta:'もうした',nai:'もうさない',vol:'もうそう',grp:1},
+  'いたします': {plain:'いたす',pot:'いたせる',te:'いたして',ta:'いたした',nai:'いたさない',vol:'いたそう',grp:1},
+  'はいけんします': {plain:'はいけんする',pot:'はいけんできる',te:'はいけんして',ta:'はいけんした',nai:'はいけんしない',vol:'はいけんしよう',grp:3},
+  'ぞんじます': {plain:'ぞんじる',pot:'ぞんじられる',te:'ぞんじて',ta:'ぞんじた',nai:'ぞんじない',vol:'ぞんじよう',grp:2},
+  'うかがいます': {plain:'うかがう',pot:'うかがえる',te:'うかがって',ta:'うかがった',nai:'うかがわない',vol:'うかがおう',grp:1},
+};
+
+// Returns forms for a verb card, or null if not a verb
+function getVerbForms(card) {
+  if (!card || !card.jp || !card.jp.endsWith('\u307e\u3059')) return null;
+  var d = VERB_DATA[card.jp];
+  if (d) return d;
+  // Fallback: します-compound
+  if (card.jp.endsWith('\u3057\u307e\u3059')) {
+    var stem = card.jp.slice(0, -3);
+    return {plain:stem+'\u3059\u308b', pot:stem+'\u3067\u304d\u308b',
+            te:stem+'\u3057\u3066', ta:stem+'\u3057\u305f',
+            nai:stem+'\u3057\u306a\u3044', vol:stem+'\u3057\u3088\u3046', grp:3};
+  }
+  return null;
+}
+
+// Format verb forms as a compact string for prompts
+function verbFormsText(card) {
+  var f = getVerbForms(card);
+  if (!f) return '';
+  return 'Verb forms for ' + card.jp + ' (' + card.en + '):\n'
+    + '  Plain (dictionary): ' + f.plain + '\n'
+    + '  Potential (can do): ' + f.pot + '\n'
+    + '  Te-form: ' + f.te + '\n'
+    + '  Plain past (ta): ' + f.ta + '\n'
+    + '  Plain negative (nai): ' + f.nai + '\n'
+    + '  Volitional (let\'s): ' + f.vol;
+}
+
+
+
+function classifyCard(c) {
+  if (c.typeOverride) return c.typeOverride;
+  var jp = c.jp;
+  if (jp.endsWith('ます')) return 'verb';
+  if (IADJ_SET.has(jp)) return 'i-adj';
+  if (NADJ_SET.has(jp)) return 'na-adj';
+  if (jp.charAt(0)==='〜' || jp.charAt(0)==='～') return 'other';
+  if ((c.en||'').indexOf('(suffix')!==-1||(c.en||'').indexOf('(counter')!==-1) return 'other';
+  return 'noun';
+}
+
+function toggleType(type, btn) {
+  if (selectedTypes.has(type)) {
+    if (selectedTypes.size === 1) return;
+    selectedTypes.delete(type);
+    btn.classList.remove('active');
+  } else {
+    selectedTypes.add(type);
+    btn.classList.add('active');
+  }
+  rebuildAndStart();
+}
+
+// ── FILTER ─────────────────────────────────────────────────────────────────
+function getFilteredCards() {
+  var r = cards.filter(function(c){ return selectedLessons.has(c.lesson); });
+  if (selectedTypes.size < 5) {
+    r = r.filter(function(c){ return selectedTypes.has(classifyCard(c)); });
+  }
+  return r;
+}
+
+// ── DECK ───────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  for (var i=arr.length-1;i>0;i--) {
+    var j=Math.floor(Math.random()*(i+1)), t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+
+function buildDeck() {
+  var pool = getFilteredCards();
+  var now  = Date.now();
+  var due    = pool.filter(function(c){ return c.nextReview<=now; });
+  var notDue = pool.filter(function(c){ return c.nextReview>now; });
+  quizDeck    = shuffle(due.slice()).concat(shuffle(notDue.slice()));
+  quizDeckPos = 0;
+}
+
+function shuffleDeck() {
+  buildDeck();
+  quizScore = {correct:0, wrong:0, total:0};
+  showNextCard();
+}
+
+function loopDeck() {
+  quizDeckPos = 0;
+  quizScore   = {correct:0, wrong:0, total:0};
+  showNextCard();
+}
+
+function rebuildAndStart() {
+  quizScore = {correct:0, wrong:0, total:0};
+  initQuiz();
+}
+
+// ── QUIZ INIT & FLOW ────────────────────────────────────────────────────────
+function setQuizType(t, btn) {
+  currentMode = t;
+  document.querySelectorAll('.quiz-type-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  // Show question-limit row only for fill-in and grammar
+  var limitRow = document.getElementById('qLimitRow');
+  if (limitRow) limitRow.style.display = (t==='fillin'||t==='grammar') ? 'flex' : 'none';
+  modeQCount = 0;
+  buildDeck();
+  quizScore = {correct:0, wrong:0, total:0};
+  showNextCard();
+}
+
+function initQuiz() {
+  var pool = getFilteredCards();
+  var empty = document.getElementById('quizEmpty');
+  var content = document.getElementById('quizContent');
+  if (!pool.length) {
+    empty.style.display = '';
+    content.innerHTML = '';
+    document.getElementById('deckStatus').textContent = '';
+    document.getElementById('quizProgress').style.width = '0%';
+    return;
+  }
+  empty.style.display = 'none';
+  buildDeck();
+  showNextCard();
+}
+
+function nextCard() { showNextCard(); }
+
+function setShowKanji(val) {
+  showKanji = val;
+  // Update all toggle button pairs (study tab + settings tab)
+  [['btnKanji','btnHira'],['stnKanji','stnHira']].forEach(function(pair){
+    var kBtn = document.getElementById(pair[0]);
+    var hBtn = document.getElementById(pair[1]);
+    if (kBtn) { kBtn.style.background = val ? 'var(--accent)' : 'var(--hover)'; kBtn.style.color = val ? '#fff' : 'var(--muted)'; }
+    if (hBtn) { hBtn.style.background = val ? 'var(--hover)' : 'var(--accent)'; hBtn.style.color = val ? 'var(--muted)' : '#fff'; }
+  });
+  // Re-render current card if quiz is active
+  if (currentCard) {
+    if      (currentMode==='mc-jp-en')  renderMC(true);
+    else if (currentMode==='mc-en-jp')  renderMC(false);
+    else if (currentMode==='flashcard') renderFlashcard();
+  }
+}
+
+function showNextCard() {
+  var empty   = document.getElementById('quizEmpty');
+  var content = document.getElementById('quizContent');
+  var status  = document.getElementById('deckStatus');
+  var progBar = document.getElementById('quizProgress');
+
+  // For fill-in / grammar, enforce question limit
+  if ((currentMode==='fillin'||currentMode==='grammar') && questionLimit>0 && modeQCount>=questionLimit) {
+    var pct = questionLimit ? Math.round((quizScore.correct/questionLimit)*100) : 0;
+    content.innerHTML =
+      '<div class="complete-screen">'
+      + '<div class="complete-icon">&#127881;</div>'
+      + '<div class="complete-title">Session complete!</div>'
+      + '<div class="complete-sub">' + questionLimit + ' questions &nbsp;&bull;&nbsp; '
+      + quizScore.correct + ' correct &nbsp;&bull;&nbsp; ' + pct + '%</div>'
+      + '<div class="complete-btns">'
+      + '<button class="btn btn-primary" onclick="modeQCount=0;quizScore={correct:0,wrong:0,total:0};showNextCard()">&#x1F500;&nbsp;New session</button>'
+      + '</div></div>';
+    if (progBar) progBar.style.width = '100%';
+    if (status)  status.textContent  = questionLimit + ' / ' + questionLimit + ' questions';
+    return;
+  }
+
+  if (!quizDeck.length) {
+    empty.style.display = '';
+    content.innerHTML = '';
+    status.textContent = '';
+    progBar.style.width = '0%';
+    return;
+  }
+
+  if (quizDeckPos >= quizDeck.length) {
+    // Deck exhausted — completion screen
+    var pct = Math.round((quizScore.correct / quizDeck.length) * 100);
+    content.innerHTML =
+      '<div class="complete-screen">'
+      + '<div class="complete-icon">&#127881;</div>'
+      + '<div class="complete-title">Round complete!</div>'
+      + '<div class="complete-sub">'
+      + quizDeck.length + ' cards &nbsp;&bull;&nbsp; '
+      + quizScore.correct + ' correct &nbsp;&bull;&nbsp; '
+      + pct + '%</div>'
+      + '<div class="complete-btns">'
+      + '<button class="btn btn-primary" onclick="shuffleDeck()">&#x1F500;&nbsp;Reshuffle</button>'
+      + '<button class="btn btn-secondary" onclick="loopDeck()">&#x1F501;&nbsp;Loop again</button>'
+      + '</div></div>';
+    progBar.style.width = '100%';
+    status.textContent = quizDeck.length + ' / ' + quizDeck.length + ' cards';
+    return;
+  }
+
+  currentCard = quizDeck[quizDeckPos++];
+  flipped = false; fillData = null; answered = false;
+  quizScore.total++;
+
+  var pct = Math.round((quizDeckPos / quizDeck.length) * 100);
+  progBar.style.width = pct + '%';
+  if (currentMode==='fillin' || currentMode==='grammar') {
+    status.textContent = questionLimit>0
+      ? modeQCount + ' / ' + questionLimit + ' questions'
+      : 'Q' + modeQCount;
+  } else {
+    status.textContent = quizDeckPos + ' / ' + quizDeck.length + ' cards';
+  }
+  empty.style.display = 'none';
+
+  if      (currentMode === 'mc-jp-en')  renderMC(true);
+  else if (currentMode === 'mc-en-jp')  renderMC(false);
+  else if (currentMode === 'fillin')    { modeQCount++; renderFillIn(); }
+  else if (currentMode === 'grammar')   { modeQCount++; renderGrammarQuiz(); }
+  else                                  renderFlashcard();
+}
+
+// ── SCORE HEADER ───────────────────────────────────────────────────────────
+function scoreHeader() {
+  return '<div class="quiz-header">'
+    + '<div class="quiz-counter">' + quizDeckPos + ' / ' + quizDeck.length + '</div>'
+    + '<div class="score-row">'
+    + '<div class="score-pill score-wrong">&#x2717; ' + quizScore.wrong + '</div>'
+    + '<div class="score-pill score-right">&#x2713; ' + quizScore.correct + '</div>'
+    + '</div></div>';
+}
+
+// ── MULTIPLE CHOICE ─────────────────────────────────────────────────────────
+function renderMC(jpFront) {
+  var card = currentCard;
+  // Build 3 distractors
+  var pool = shuffle(cards.filter(function(c){ return c.id!==card.id; })).slice(0,3);
+  var choices = shuffle(pool.concat([card]));
+  var letters = ['A','B','C','D'];
+
+  // Respect showKanji setting for JP side of question
+  var qFront = jpFront ? (showKanji ? card.jp : (card.reading || card.jp)) : null;
+  var qHint  = jpFront ? (showKanji ? (card.reading && card.reading!==card.jp ? card.reading : '') : (card.jp !== (card.reading||card.jp) ? card.jp : '')) : '';
+  var qHtml  = jpFront
+    ? '<div class="q-kanji">' + qFront + '</div>'
+    : '<div class="q-en">' + card.en + '</div>';
+
+  var optsHtml = '';
+  for (var i=0;i<choices.length;i++) {
+    var ch = choices[i];
+    var jpDisplay = showKanji ? ch.jp : (ch.reading || ch.jp);
+    var txt = jpFront
+      ? '<span style="font-family:var(--font-jp);font-size:16px">' + ch.en + '</span>'
+      : '<span style="font-family:var(--font-jp);font-size:18px">' + jpDisplay + '</span>';
+    optsHtml += '<button class="mc-opt" data-id="' + ch.id + '" data-correct="' + card.id + '" onclick="checkMC(this)">'
+      + '<div class="mc-letter">' + letters[i] + '</div>'
+      + '<div class="mc-text">' + txt + '</div>'
+      + '<div class="mc-check"></div></button>';
+  }
+
+  // Hint shows hiragana reading (hidden by default)
+  var hintHtml = '';
+  if (jpFront && qHint) {
+    var hintLabel = showKanji ? 'Show reading ▾' : 'Show kanji ▾';
+    hintHtml = '<button class="hint-toggle" onclick="toggleHint()">' + hintLabel + '</button>'
+             + '<div class="hint-text" id="hintTxt">' + qHint + '</div>';
+  }
+
+  document.getElementById('quizContent').innerHTML =
+    scoreHeader()
+    + '<div class="q-label">' + (jpFront ? 'What does this mean?' : 'Which is the correct Japanese?') + '</div>'
+    + qHtml
+    + '<div class="mc-options">' + optsHtml + '</div>'
+    + '<div class="expl" id="quizExpl"></div>'
+    + '<div class="hint-row">'
+    + hintHtml
+    + '<button class="btn btn-secondary dont-know-btn" onclick="dontKnow()">Don’t know</button>'
+    + '</div>'
+    + '<button class="next-btn" id="nextBtn" onclick="nextCard()">Next &#x2192;</button>';
+}
+
+function checkMC(btn) {
+  if (answered) return;
+  answered = true;
+  var chosenId  = btn.getAttribute('data-id');
+  var correctId = btn.getAttribute('data-correct');
+  var ok = chosenId === correctId;
+  if (ok) quizScore.correct++; else quizScore.wrong++;
+
+  document.querySelectorAll('.mc-opt').forEach(function(b) {
+    b.classList.add('locked');
+    var bid = b.getAttribute('data-id');
+    if (bid === correctId) { b.classList.add('correct'); b.querySelector('.mc-check').textContent = '✓'; }
+    else if (b===btn && !ok) { b.classList.add('wrong'); b.querySelector('.mc-check').textContent = '✗'; }
+  });
+
+  var cc = cards.find(function(c){ return c.id===correctId; }) || currentCard;
+  var expl = document.getElementById('quizExpl');
+  expl.classList.add('show');
+  var reading = (cc.reading && cc.reading!==cc.jp) ? ' (' + cc.reading + ')' : '';
+  if (ok) {
+    expl.innerHTML = '<div class="ok">✓ Correct!</div>'
+      + '<span style="font-family:var(--font-jp)">' + cc.jp + '</span>' + reading + ' — ' + cc.en;
+  } else {
+    expl.innerHTML = '<div class="no">✗ Not quite.</div>'
+      + 'Answer: <b style="font-family:var(--font-jp)">' + cc.jp + '</b>' + reading + ' — <b>' + cc.en + '</b>';
+  }
+  updateSRS(correctId, ok);
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function toggleFillTranslation(btn) {
+  var div  = document.getElementById('fillTransDiv');
+  if (!div) return;
+  var show = !div.classList.contains('show');
+  if (show) {
+    div.textContent = decodeURIComponent(btn.getAttribute('data-trans') || '');
+    div.classList.add('show');
+    btn.textContent = 'Hide translation ▴';
+  } else {
+    div.classList.remove('show');
+    btn.textContent = 'Show translation ▾';
+  }
+}
+
+function dontKnow() {
+  if (answered) return;
+  answered = true;
+  quizScore.wrong++;
+
+  var correctId = null;
+  var btns = document.querySelectorAll('.mc-opt');
+  if (btns.length) correctId = btns[0].getAttribute('data-correct');
+
+  document.querySelectorAll('.mc-opt').forEach(function(b) {
+    b.classList.add('locked');
+    if (b.getAttribute('data-id') === correctId) {
+      b.classList.add('correct');
+      b.querySelector('.mc-check').textContent = '✓';
+    }
+  });
+
+  // Auto-reveal reading hint
+  var hintEl  = document.getElementById('hintTxt');
+  var hintBtn = document.querySelector('.hint-toggle');
+  if (hintEl) hintEl.classList.add('show');
+  if (hintBtn) hintBtn.textContent = 'Hide reading ▴';
+
+  var cc = (correctId && cards.find(function(c){ return c.id===correctId; })) || currentCard;
+  var expl = document.getElementById('quizExpl');
+  expl.classList.add('show');
+  var reading = (cc && cc.reading && cc.reading!==cc.jp) ? ' (' + cc.reading + ')' : '';
+  expl.innerHTML = '<div class="no">Answer revealed</div>'
+    + 'Answer: <b style="font-family:var(--font-jp)">' + (cc?cc.jp:'') + '</b>' + reading + ' — <b>' + (cc?cc.en:'') + '</b>';
+
+  updateSRS(correctId, false);
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function toggleHint() {
+  var h   = document.getElementById('hintTxt');
+  var btn = document.querySelector('.hint-toggle');
+  if (!h) return;
+  var show = !h.classList.contains('show');
+  h.classList.toggle('show', show);
+  if (btn) btn.textContent = show ? 'Hide reading ▴' : 'Show reading ▾';
+}
+
+// ── SRS UPDATE ─────────────────────────────────────────────────────────────
+function updateSRS(id, ok) {
+  var idx = cards.findIndex(function(c){ return c.id===id; });
+  if (idx === -1) return;
+  var intervals = [1, 3600000, 86400000, 259200000];
+  cards[idx].srs = Math.max(0, Math.min(3, ok ? cards[idx].srs+1 : 0));
+  cards[idx].nextReview = Date.now() + intervals[cards[idx].srs];
+  saveCards();
+}
+
+// ── FILL IN BLANK ───────────────────────────────────────────────────────────
+async function renderFillIn() {
+  var card = currentCard;
+  var el = document.getElementById('quizContent');
+  el.innerHTML = scoreHeader()
+    + '<div class="ai-thinking"><div class="dot-pulse"><span></span><span></span><span></span></div> Writing a sentence…</div>';
+  try {
+    // For verbs, prioritize testing plain/potential forms
+    var isVerb = classifyCard(card) === 'verb';
+    var vf = isVerb ? getVerbForms(card) : null;
+    var fillPrompt;
+    if (vf) {
+      var wordDisplay = showKanji ? card.jp : (card.reading || card.jp);
+      var kanaNote = showKanji ? '' : ' Write the sentence in HIRAGANA only (no kanji).';
+      fillPrompt = 'Write ONE simple Japanese sentence that tests a VERB FORM of "' + wordDisplay + '" ('+ card.en +').' + kanaNote
+        + ' Prioritize using the PLAIN form (' + vf.plain + ') or POTENTIAL form (' + vf.pot + '). '
+        + 'You may also use: te-form (' + vf.te + '), plain past (' + vf.ta + '), or plain negative (' + vf.nai + '). '
+        + 'Replace the conjugated verb with ＿＿＿ in the sentence. '
+        + 'Return ONLY JSON with no markdown: {"sentence":"Japanese sentence with ＿＿＿","answer":"the conjugated form used","translation":"English translation","form_used":"e.g. plain form / potential form"}';
+    } else {
+      var wordRef = showKanji ? card.jp : (card.reading || card.jp);
+      var kanaNote2 = showKanji ? '' : ' Write the sentence in HIRAGANA only (no kanji).';
+      fillPrompt = 'Write ONE simple Japanese sentence using "' + wordRef + '" (' + card.en + ').' + kanaNote2 + ' Replace the word with ＿＿＿. Return ONLY JSON with no markdown: {"sentence":"...","answer":"' + wordRef + '","translation":"English translation","form_used":""}';
+    }
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:300,
+        messages:[{role:'user',content:fillPrompt}]
+      })
+    });
+    var d = await resp.json();
+    var txt = d.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
+    fillData = JSON.parse(txt);
+    var formLabel = (fillData.form_used && classifyCard(card)==='verb')
+      ? '<span style="font-size:11px;background:#e8f4fd;color:#1565c0;padding:2px 8px;border-radius:10px;margin-left:6px">' + fillData.form_used + '</span>'
+      : '';
+    // Show reading (hiragana) of the card as hint; English translation hidden behind toggle
+    var cardReading = card.reading && card.reading !== card.jp ? card.reading : '';
+    var transEncoded = encodeURIComponent(fillData.translation);
+    el.innerHTML = scoreHeader()
+      + '<div class="q-label">Fill in the blank' + formLabel + '</div>'
+      + '<div class="fillin-sentence" id="fillSent"></div>'
+      + (cardReading ? '<div style="font-size:14px;color:var(--accent2);margin-top:4px;font-family:var(--font-jp)">' + cardReading + '</div>' : '')
+      + '<div class="hint-row" style="margin-top:6px">'
+      + '<button class="hint-toggle" onclick="toggleFillTranslation(this)" data-trans="' + transEncoded + '">Show translation &#x25be;</button>'
+      + '<div class="hint-text" id="fillTransDiv" style="font-size:12px;color:var(--muted);font-family:var(--font-ui)"></div>'
+      + '</div>'
+      + '<div id="fillFb"></div>'
+      + '<div class="action-row" style="margin-top:10px">'
+      + '<button class="btn btn-secondary" id="showAnsBtn" onclick="showFillAnswer()">Show answer</button>'
+      + '<button class="btn btn-primary" onclick="checkFill()">Check &#x2192;</button>'
+      + '</div>';
+    // Build sentence with input — done via DOM to avoid quote nesting
+    var sent = document.getElementById('fillSent');
+    var parts = fillData.sentence.split('＿＿＿');
+    if (parts.length >= 2) {
+      sent.appendChild(document.createTextNode(parts[0]));
+      var inp = document.createElement('input');
+      inp.className = 'fillin-input'; inp.id = 'fillAns'; inp.placeholder = '？';
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') checkFill(); });
+      sent.appendChild(inp);
+      sent.appendChild(document.createTextNode(parts.slice(1).join('＿＿＿')));
+      inp.focus();
+    } else {
+      sent.textContent = fillData.sentence;
+    }
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state">Could not generate.<br><br><button class="btn btn-primary" onclick="nextCard()">Try another &#x2192;</button></div>';
+  }
+}
+
+function showFillAnswer() {
+  var inp = document.getElementById('fillAns');
+  if (inp && fillData) inp.value = fillData.answer;
+}
+
+function checkFill() {
+  if (!fillData) return;
+  var inp = document.getElementById('fillAns');
+  if (!inp) return;
+  var ans = inp.value.trim();
+  var ok  = ans===fillData.answer || (currentCard && ans===currentCard.reading);
+  if (ok) quizScore.correct++; else quizScore.wrong++;
+  var reading = (currentCard && currentCard.reading && currentCard.reading!==currentCard.jp) ? ' (' + currentCard.reading + ')' : '';
+  document.getElementById('fillFb').innerHTML =
+    '<div class="fillin-fb ' + (ok?'fillin-ok':'fillin-ng') + '">'
+    + (ok ? '✓ Correct!' : '✗ Answer: ' + fillData.answer + reading) + '</div>';
+  inp.disabled = true;
+  if (currentCard) updateSRS(currentCard.id, ok);
+  setTimeout(nextCard, 1500);
+}
+
+// ── GRAMMAR QUIZ ────────────────────────────────────────────────────────────
+async function renderGrammarQuiz() {
+  var pool = getFilteredCards();
+  var lessonArr = Array.from(selectedLessons).sort(function(a,b){
+    return parseInt(a.replace(/\D/g,''))-parseInt(b.replace(/\D/g,''));
+  });
+  var lessonList = lessonArr.slice(0,8).join(', ') + (lessonArr.length>8?'…':'');
+  var sampleWords = shuffle(pool.slice()).slice(0,20).map(function(c){ return (showKanji ? c.jp : (c.reading||c.jp)) + '(' + c.en + ')'; }).join(', ');
+  var el = document.getElementById('quizContent');
+  el.innerHTML = scoreHeader()
+    + '<div class="ai-thinking"><div class="dot-pulse"><span></span><span></span><span></span></div> Writing a grammar question…</div>';
+  try {
+    // Include verb forms if the current card is a verb
+  var verbCtx = '';
+  if (currentCard && classifyCard(currentCard) === 'verb') {
+    verbCtx = verbFormsText(currentCard);
+  }
+  var verbInstruction = verbCtx
+    ? 'The card being tested is a VERB. ' + verbCtx + '\n\nPrioritize questions about the PLAIN (dictionary) form or POTENTIAL form. '
+      + 'Good question types: "What is the plain form of X?", "Complete the sentence using potential form", "Which sentence uses the correct verb form?". '
+      + (showKanji ? '' : 'Write all Japanese in HIRAGANA only. ')
+    : '';
+  var kanaInstr = showKanji ? '' : 'IMPORTANT: Write question_jp and all options in HIRAGANA only (no kanji). ';
+    var prompt = 'You are a Japanese grammar teacher for Minna no Nihongo. Lessons in focus: '+lessonList+'. ' + kanaInstr
+    + verbInstruction
+    + 'Vocabulary: '+sampleWords+'. Create ONE multiple-choice grammar question (sentence completion, particle choice, verb form, or pattern meaning). '
+    + 'Return ONLY valid JSON with no markdown. Fields: '
+    + '"question_jp": the complete question written IN JAPANESE (e.g. 「___に　何を入れますか」or「正しい文はどれですか」), '
+    + '"question_en": English translation of the question (used as a hidden hint), '
+    + '"options": array of 4 answer choices in Japanese, '
+    + '"correct": 0-based index of correct answer, '
+    + '"explanation": explanation in English of why the answer is correct. '
+    + 'Example: {"question_jp":"___を　食べます。（正しい助詞は？）","question_en":"Which particle is correct?","options":["が","は","を","で"],"correct":2,"explanation":"を marks the direct object of 食べます."}';
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600,
+        messages:[{role:'user',content:prompt}] })
+    });
+    var d = await resp.json();
+    var txt = d.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
+    var q = JSON.parse(txt);
+    var letters = ['A','B','C','D'];
+    var optsHtml = '';
+    for (var i=0;i<q.options.length;i++) {
+      optsHtml += '<button class="mc-opt" data-idx="'+i+'" data-correct="'+q.correct+'" data-expl="'+encodeURIComponent(q.explanation)+'" onclick="checkGrammarMC(this)">'
+        +'<div class="mc-letter">'+letters[i]+'</div>'
+        +'<div class="mc-text" style="font-family:var(--font-jp)">'+q.options[i]+'</div>'
+        +'<div class="mc-check"></div></button>';
+    }
+    // Build translation toggle for grammar question
+    var hasEnTrans = !!(q.question_en);
+    var grammarTransRow = hasEnTrans
+      ? '<div class="hint-row" style="margin-bottom:12px">'
+        + '<button class="hint-toggle" onclick="toggleFillTranslation(this)" data-trans="' + encodeURIComponent(q.question_en) + '">Show translation &#x25be;</button>'
+        + '<div class="hint-text" id="fillTransDiv" style="font-size:12px;color:var(--muted);font-family:var(--font-ui)"></div>'
+        + '</div>'
+      : '';
+    el.innerHTML = scoreHeader()
+      + '<div class="q-label">Grammar · ' + lessonList.split(',').slice(0,3).join(', ') + '</div>'
+      + '<div class="grammar-q">' + (q.question_jp || q.question || '') + '</div>'
+      + grammarTransRow
+      + '<div class="mc-options">' + optsHtml + '</div>'
+      + '<div class="expl" id="quizExpl"></div>'
+      + '<button class="next-btn" id="nextBtn" onclick="nextCard()">Next →</button>';
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state">Could not generate.<br><br><button class="btn btn-primary" onclick="nextCard()">Try again &#x2192;</button></div>';
+  }
+}
+
+function checkGrammarMC(btn) {
+  if (answered) return;
+  answered = true;
+  var chosen  = parseInt(btn.getAttribute('data-idx'));
+  var correct = parseInt(btn.getAttribute('data-correct'));
+  var expl    = decodeURIComponent(btn.getAttribute('data-expl'));
+  var ok = chosen===correct;
+  if (ok) quizScore.correct++; else quizScore.wrong++;
+  document.querySelectorAll('.mc-opt').forEach(function(b,i){
+    b.classList.add('locked');
+    if (i===correct){ b.classList.add('correct'); b.querySelector('.mc-check').textContent='✓'; }
+    else if (b===btn&&!ok){ b.classList.add('wrong'); b.querySelector('.mc-check').textContent='✗'; }
+  });
+  var explEl = document.getElementById('quizExpl');
+  explEl.classList.add('show');
+  explEl.innerHTML = (ok?'<div class="ok">✓ Correct!</div>':'<div class="no">✗ Not quite.</div>') + expl;
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+// ── FLASHCARD ───────────────────────────────────────────────────────────────
+function renderFlashcard() {
+  var c = currentCard;
+  var el = document.getElementById('quizContent');
+  var fcPrimary   = showKanji ? c.jp : (c.reading || c.jp);
+  var fcSecondary = showKanji ? c.reading : (c.reading !== c.jp ? c.jp : '');
+  el.innerHTML = '<div class="flashcard" id="fcCard" onclick="flipCard()">'
+    + '<div class="fc-front">' + fcPrimary + '</div>'
+    + (fcSecondary && fcSecondary!==fcPrimary ? '<div class="fc-reading">' + fcSecondary + '</div>' : '<div class="fc-hint">tap to flip</div>')
+    + '</div>'
+    + '<div id="srsRow" style="display:none">'
+    + '<div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px">How well did you know it?</div>'
+    + '<div class="srs-row">'
+    + '<button class="srs-btn srs-again" onclick="rateSRS(0)">Again</button>'
+    + '<button class="srs-btn srs-hard"  onclick="rateSRS(1)">Hard</button>'
+    + '<button class="srs-btn srs-good"  onclick="rateSRS(2)">Good</button>'
+    + '<button class="srs-btn srs-easy"  onclick="rateSRS(3)">Easy</button>'
+    + '</div></div>';
+}
+
+function flipCard() {
+  if (flipped) return;
+  flipped = true;
+  var c = currentCard;
+  var fc = document.getElementById('fcCard');
+  var frontKanji = c.jp;
+  var frontHira  = c.reading || c.jp;
+  fc.innerHTML = '<div class="fc-front">' + (showKanji ? frontKanji : frontHira) + '</div>'
+    + (c.reading && c.reading!==c.jp ? '<div class="fc-reading">' + (showKanji ? frontHira : frontKanji) + '</div>' : '')
+    + '<div class="fc-back">' + c.en + '</div>';
+  document.getElementById('srsRow').style.display = '';
+}
+
+async function rateSRS(score) {
+  if (currentCard) updateSRS(currentCard.id, score>=2);
+  nextCard();
+}
+
+// ── MY LIST ─────────────────────────────────────────────────────────────────
+var TYPE_META = [
+  {key:'all',  label:'All types', cls:''},
+  {key:'verb', label:'Verbs',     cls:'t-verb'},
+  {key:'i-adj',label:'い-adj',    cls:'t-iadj'},
+  {key:'na-adj',label:'な-adj',   cls:'t-nadj'},
+  {key:'noun', label:'Nouns',     cls:'t-noun'},
+  {key:'other',label:'Etc.',      cls:'t-other'}
+];
+var TYPE_COLORS = {verb:['#e8f4fd','#1565c0'], 'i-adj':['#f3e8fd','#6a1b9a'], 'na-adj':['#fce8fd','#880e4f'], noun:['#e8f5e9','#2e7d32'], other:['#fff8e1','#f57f17']};
+
+var listWeakOnly = false;
+var listCustomTag = '';   // active custom tag filter, '' = all
+
+function renderList() {
+  // ── Lesson filter ──
+  var lf = document.getElementById('listLessonFilters');
+  if (lf) {
+    lf.innerHTML = '';
+    var lessons = ['all'].concat(getAllLessons());
+    lessons.forEach(function(l) {
+      var b = document.createElement('button');
+      b.className = 'f-btn' + (l === listLesson ? ' active' : '');
+      b.textContent = l === 'all' ? 'All' : l;
+      b.addEventListener('click', function(){ listLesson = l; renderList(); });
+      lf.appendChild(b);
+    });
+  }
+
+  // ── Type filter ──
+  var tf = document.getElementById('listTypeFilters');
+  if (tf) {
+    tf.innerHTML = '';
+    TYPE_META.forEach(function(t) {
+      var b = document.createElement('button');
+      b.className = 'f-btn' + (t.key === listType ? ' active' : '');
+      b.textContent = t.label;
+      b.addEventListener('click', function(){ listType = t.key; renderList(); });
+      tf.appendChild(b);
+    });
+  }
+
+  // ── Custom tag filter ──
+  var ctf = document.getElementById('listCustomTagFilters');
+  if (ctf) {
+    if (customTagsList.length > 0) {
+      ctf.style.display = '';
+      ctf.innerHTML = '';
+      var allBtn = document.createElement('button');
+      allBtn.className = 'f-btn' + (listCustomTag === '' ? ' active' : '');
+      allBtn.textContent = 'All tags';
+      allBtn.addEventListener('click', function(){ listCustomTag = ''; renderList(); });
+      ctf.appendChild(allBtn);
+      customTagsList.forEach(function(tag) {
+        var b = document.createElement('button');
+        b.className = 'f-btn' + (listCustomTag === tag ? ' active' : '');
+        b.textContent = '#' + tag;
+        b.addEventListener('click', function(){ listCustomTag = tag; renderList(); });
+        ctf.appendChild(b);
+      });
+    } else {
+      ctf.style.display = 'none';
+    }
+  }
+
+  // ── Weak filter button state ──
+  var lwb = document.getElementById('listWeakBtn');
+  if (lwb) lwb.className = 'f-btn' + (listWeakOnly ? ' active' : '');
+
+  // ── Apply filters ──
+  var filtered = cards;
+  if (listLesson !== 'all') filtered = filtered.filter(function(c){ return c.lesson === listLesson; });
+  if (listType   !== 'all') filtered = filtered.filter(function(c){ return classifyCard(c) === listType; });
+  if (listCustomTag !== '')  filtered = filtered.filter(function(c){ return (c.customTags||[]).indexOf(listCustomTag) !== -1; });
+  if (listWeakOnly)          filtered = filtered.filter(function(c){ return (c.srs||0) <= 1; });
+  if (listSearchVal) {
+    var q = listSearchVal.toLowerCase();
+    var qHira = romajiToHiragana(q); // convert romaji input to hiragana for matching
+    filtered = filtered.filter(function(c){
+      return (c.jp && c.jp.toLowerCase().indexOf(q) !== -1)
+          || (c.reading && c.reading.indexOf(qHira) !== -1)
+          || (c.reading && c.reading.toLowerCase().indexOf(q) !== -1)
+          || (c.en && c.en.toLowerCase().indexOf(q) !== -1);
+    });
+  }
+
+  var el = document.getElementById('wordList');
+  if (!filtered.length) { el.innerHTML = '<div class="empty-state">No cards match.</div>'; return; }
+
+  var srsL = ['New','Learning','Review','Mastered'];
+  var rows = filtered.map(function(c) {
+    var ri = cards.indexOf(c);
+    var ct = classifyCard(c);
+    var col = TYPE_COLORS[ct] || ['#f0ede6','#666'];
+    var badge = '<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:'+col[0]+';color:'+col[1]+'">' + ct + '</span>';
+    var ctags = '';
+    (c.customTags||[]).forEach(function(t){
+      var btn = document.createElement('span');
+      btn.className = 'tag-chip';
+      btn.innerHTML = '<span>#' + t + '</span><span class="x">×</span>';
+      btn.addEventListener('click', (function(idx, tag){ return function(){ removeTag(idx, tag); }; })(ri, t));
+      // Collect as string — we'll use data attributes instead
+      ctags += '<span class="tag-chip" data-ri="'+ri+'" data-tag="'+t+'"><span>#'+t+'</span><span class="x" onclick="removeTagByData(this)">×</span></span>';
+    });
+    return '<div class="word-item" id="witem-'+ri+'">'
+      + '<div class="word-item-top">'
+      + '<div class="word-jp">' + c.jp + '</div>'
+      + '<div class="word-reading" style="font-size:12px;color:var(--muted)">' + (c.reading||'') + '</div>'
+      + '<div class="word-en">' + c.en + '</div>'
+      + '<span class="word-lesson">' + (c.lesson||'') + '</span>'
+      + badge
+      + '<span class="srs-badge srs-'+Math.min(c.srs,3)+'">'+srsL[Math.min(c.srs,3)]+'</span>'
+      + ctags
+      + '<button class="edit-btn" title="Edit tags" onclick="toggleEdit('+ri+')">&#9998;</button>'
+      + '<button class="word-delete" onclick="deleteCard('+ri+')">×</button>'
+      + '</div>'
+      + '<div class="tag-editor" id="tedit-'+ri+'" style="display:none"></div>'
+      + '</div>';
+  }).join('');
+  el.innerHTML = rows;
+}
+
+function toggleListWeak(btn) {
+  listWeakOnly = !listWeakOnly;
+  renderList();
+}
+
+function toggleWeakFilter(btn) {
+  weakFilter = !weakFilter;
+  btn.style.background  = weakFilter ? '#fdecea' : 'var(--hover)';
+  btn.style.color       = weakFilter ? '#c62828'  : 'var(--muted)';
+  btn.style.borderColor = weakFilter ? '#e57373'  : 'transparent';
+  rebuildAndStart();
+}
+
+function toggleEdit(ri) {
+  var panel = document.getElementById('tedit-' + ri);
+  var item  = document.getElementById('witem-' + ri);
+  if (!panel) return;
+  if (panel.style.display !== 'none') {
+    panel.style.display = 'none';
+    item.classList.remove('editing');
+    return;
+  }
+  item.classList.add('editing');
+  panel.style.display = '';
+  renderTagEditor(ri, panel);
+}
+
+function renderTagEditor(ri, panel) {
+  var c = cards[ri];
+  if (!c) return;
+  if (!c.customTags) c.customTags = [];
+  if (c.typeOverride === undefined) c.typeOverride = '';
+
+  panel.innerHTML = '';
+
+  function makeRow(label, contentEl) {
+    var row = document.createElement('div');
+    row.className = 'tag-editor-row';
+    var lbl = document.createElement('span');
+    lbl.className = 'tag-editor-label';
+    lbl.textContent = label;
+    row.appendChild(lbl);
+    row.appendChild(contentEl);
+    panel.appendChild(row);
+  }
+
+  function makeChipBtn(text, active, onClick) {
+    var b = document.createElement('button');
+    b.className = 'tag-chip' + (active ? ' on' : '');
+    b.textContent = text;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  // ── Lesson row ──
+  var lessonDiv = document.createElement('div');
+  lessonDiv.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px';
+  getAllLessons().forEach(function(l) {
+    lessonDiv.appendChild(makeChipBtn(l, c.lesson===l, function(){ setCardLesson(ri, l); }));
+  });
+  makeRow('Lesson', lessonDiv);
+
+  // ── Type row ──
+  var typeDiv = document.createElement('div');
+  typeDiv.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px';
+  ['verb','i-adj','na-adj','noun','other'].forEach(function(t) {
+    typeDiv.appendChild(makeChipBtn(t, c.typeOverride===t, function(){ setCardType(ri, t); }));
+  });
+  if (c.typeOverride) {
+    typeDiv.appendChild(makeChipBtn('↺ reset', false, function(){ setCardType(ri, ''); }));
+  }
+  makeRow('Type', typeDiv);
+
+  // ── Custom tags row ──
+  var tagDiv = document.createElement('div');
+  tagDiv.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;align-items:center';
+  customTagsList.forEach(function(tag) {
+    var has = c.customTags.indexOf(tag) !== -1;
+    tagDiv.appendChild(makeChipBtn('#' + tag, has, function(){ toggleCardTag(ri, tag); }));
+  });
+  var inp = document.createElement('input');
+  inp.id = 'newTagInput-' + ri;
+  inp.placeholder = '+ new tag';
+  inp.style.cssText = 'border:1px solid var(--border);border-radius:14px;padding:3px 10px;font-size:11px;font-family:var(--font-ui);background:var(--card);color:var(--ink);outline:none;width:90px';
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') addNewTag(ri); });
+  tagDiv.appendChild(inp);
+  var addBtn = document.createElement('button');
+  addBtn.className = 'tag-chip';
+  addBtn.textContent = 'Add';
+  addBtn.addEventListener('click', function(){ addNewTag(ri); });
+  tagDiv.appendChild(addBtn);
+  makeRow('Tags', tagDiv);
+}
+
+async function setCardLesson(ri, lesson) {
+  cards[ri].lesson = lesson;
+  await saveCards();
+  renderTagEditor(ri, document.getElementById('tedit-'+ri));
+  // Update the lesson badge in the row
+  renderList();
+}
+
+async function setCardType(ri, type) {
+  cards[ri].typeOverride = type;
+  await saveCards();
+  renderTagEditor(ri, document.getElementById('tedit-'+ri));
+  renderList();
+}
+
+async function toggleCardTag(ri, tag) {
+  var c = cards[ri];
+  if (!c.customTags) c.customTags = [];
+  var idx = c.customTags.indexOf(tag);
+  if (idx === -1) { c.customTags.push(tag); } else { c.customTags.splice(idx, 1); }
+  await saveCards();
+  renderTagEditor(ri, document.getElementById('tedit-'+ri));
+  // Update chip display without full re-render
+  var item = document.getElementById('witem-'+ri);
+  if (item) {
+    var top = item.querySelector('.word-item-top');
+    // re-render just the chips
+    renderList();
+  }
+}
+
+async function addNewTag(ri) {
+  var inp = document.getElementById('newTagInput-'+ri);
+  if (!inp) return;
+  var tag = inp.value.trim().toLowerCase().replace(/[^a-z0-9぀-鿿゠-ヿ]/g,'');
+  if (!tag) return;
+  inp.value = '';
+  // Add to global list if new
+  if (customTagsList.indexOf(tag) === -1) {
+    customTagsList.push(tag);
+    customTagsList.sort();
+  }
+  // Add to card
+  var c = cards[ri];
+  if (!c.customTags) c.customTags = [];
+  if (c.customTags.indexOf(tag) === -1) c.customTags.push(tag);
+  await saveCards();
+  renderList();
+}
+
+async function removeTag(ri, tag) {
+  var c = cards[ri];
+  if (!c || !c.customTags) return;
+  c.customTags = c.customTags.filter(function(t){ return t !== tag; });
+  await saveCards();
+  renderList();
+}
+
+function removeTagByData(xBtn) {
+  var chip = xBtn.parentElement;
+  var ri   = parseInt(chip.getAttribute('data-ri'));
+  var tag  = chip.getAttribute('data-tag');
+  removeTag(ri, tag);
+}
+
+function setListFilter(f) { listLesson = f; renderList(); }
+function setListTypeFilter(f) { listType = f; renderList(); }
+
+
+async function deleteCard(i) {
+  cards.splice(i,1);
+  await saveCards();
+  renderList();
+}
+
+// ── STATS ───────────────────────────────────────────────────────────────────
+// ── EXPORT / IMPORT ──────────────────────────────────────────────────────────
+function cardsToCSV() {
+  var rows = [['JP','Reading','English','Lesson','Type','Custom Tags','SRS','Next Review']];
+  cards.forEach(function(c) {
+    rows.push([
+      c.jp, c.reading||'', c.en, c.lesson||'',
+      c.typeOverride || classifyCard(c),
+      (c.customTags||[]).join('|'),
+      c.srs||0,
+      c.nextReview ? new Date(c.nextReview).toISOString().slice(0,10) : ''
+    ]);
+  });
+  return rows.map(function(r){
+    return r.map(function(cell){
+      var s = String(cell||'').replace(/"/g,'""');
+      return (s.indexOf(',')!==-1||s.indexOf('"')!==-1||s.indexOf('\n')!==-1) ? '"'+s+'"' : s;
+    }).join(',');
+  }).join('\n');;
+}
+
+function exportCSV() {
+  var csv  = cardsToCSV();
+  var blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url; a.download = 'goichou_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function importCSV(e) {
+  var file = e.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = async function(ev) {
+    var lines = ev.target.result.split('\n');
+    // Skip header row
+    var added = 0, skipped = 0;
+    for (var i = 1; i < lines.length; i++) {
+      var row = parseCSVLine(lines[i]);
+      if (!row || !row[0]) continue;
+      var jp = row[0].trim();
+      if (!jp) continue;
+      // Check for existing card
+      if (cards.find(function(c){ return c.jp===jp; })) { skipped++; continue; }
+      var nc = {
+        jp: jp, reading: row[1]||'', en: row[2]||'', lesson: row[3]||'',
+        type: 'vocab', typeOverride: row[4]||'',
+        customTags: row[5] ? row[5].split('|').filter(Boolean) : [],
+        srs: parseInt(row[6])||0, nextReview: row[7] ? new Date(row[7]).getTime() : Date.now(),
+        id: Math.random().toString(36).slice(2), example_jp:'', example_en:''
+      };
+      if (!nc.typeOverride) nc.typeOverride = classifyCard(nc);
+      // Rebuild customTagsList
+      nc.customTags.forEach(function(t){ if(customTagsList.indexOf(t)===-1) customTagsList.push(t); });
+      cards.push(nc); added++;
+    }
+    customTagsList.sort();
+    await saveCards();
+    renderList();
+    alert('Imported ' + added + ' cards' + (skipped ? ', skipped ' + skipped + ' duplicates.' : '.'));
+  };
+  reader.readAsText(file, 'UTF-8');
+  e.target.value = '';
+}
+
+function parseCSVLine(line) {
+  var result = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch==='"') { if (inQ && line[i+1]==='"') { cur+='"'; i++; } else inQ=!inQ; }
+    else if (ch===',' && !inQ) { result.push(cur); cur=''; }
+    else cur += ch;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ── GOOGLE SHEETS INTEGRATION ─────────────────────────────────────────────────
+var GS_CLIENT_ID = ''; // User must provide their own OAuth client ID
+var GS_SCOPE     = 'https://www.googleapis.com/auth/spreadsheets';
+
+function openGoogleSheets() {
+  // Show configuration panel
+  var el = document.getElementById('quizContent') || document.createElement('div');
+  var panel = document.createElement('div');
+  panel.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+  panel.id = 'gsModal';
+  panel.innerHTML =
+    '<div style="background:var(--card);border-radius:14px;padding:24px;max-width:480px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">'
+    + '<div style="font-size:17px;font-weight:500;margin-bottom:6px">&#x1F4C4; Google Sheets Sync</div>'
+    + '<div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">'
+    + 'Export your card list to a Google Sheet and sync updates. You’ll need a Google OAuth 2.0 Client ID.<br><br>'
+    + '<b>Steps:</b><br>'
+    + '1. Go to <a href="https://console.cloud.google.com" target="_blank" style="color:var(--accent2)">Google Cloud Console</a><br>'
+    + '2. Create a project → Enable Sheets API → Create OAuth 2.0 credentials (Web app)<br>'
+    + '3. Add <code style="background:var(--hover);padding:1px 5px;border-radius:4px">https://claude.ai</code> as an authorised JavaScript origin<br>'
+    + '4. Paste your Client ID below'
+    + '</div>'
+    + (gsAccessToken
+      ? '<div style="color:#2e7d32;margin-bottom:12px">&#x2713; Connected</div>'
+        + '<div style="margin-bottom:10px"><label style="font-size:12px;color:var(--muted)">Sheet ID (from URL)</label><br>'
+        + '<input id="gsSheetInput" value="'+gsSheetId+'" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:13px;margin-top:4px;font-family:var(--font-ui);background:var(--paper);color:var(--ink)"></div>'
+        + '<div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="saveAndSync()">Sync now</button><button class="btn btn-secondary" onclick="unlinkSheets()">Disconnect</button><button class="btn btn-secondary" onclick="closeGSModal()">Close</button></div>'
+      : '<div style="margin-bottom:10px"><label style="font-size:12px;color:var(--muted)">OAuth 2.0 Client ID</label><br>'
+        + '<input id="gsClientInput" placeholder="123456789.apps.googleusercontent.com" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:13px;margin-top:4px;font-family:var(--font-ui);background:var(--paper);color:var(--ink)"></div>'
+        + '<div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="connectGoogle()">Connect</button><button class="btn btn-secondary" onclick="closeGSModal()">Cancel</button></div>')
+    + '</div>';
+  document.body.appendChild(panel);
+}
+
+async function connectGoogle() {
+  var inp = document.getElementById('gsClientInput');
+  if (!inp || !inp.value.trim()) return;
+  GS_CLIENT_ID = inp.value.trim();
+  // Store client ID
+  try { await sSet('gs-client-id', GS_CLIENT_ID); } catch(e){}
+  initGoogleAuth();
+}
+
+function initGoogleAuth() {
+  // Load Google Identity Services
+  if (typeof google === 'undefined' || !google.accounts) {
+    var scr = document.createElement('script');
+    scr.src = 'https://accounts.google.com/gsi/client';
+    scr.onload = function(){ startOAuth(); };
+    document.head.appendChild(scr);
+  } else {
+    startOAuth();
+  }
+}
+
+function startOAuth() {
+  google.accounts.oauth2.initTokenClient({
+    client_id: GS_CLIENT_ID,
+    scope: GS_SCOPE,
+    callback: async function(resp) {
+      if (resp.error) { alert('Auth error: ' + resp.error); return; }
+      gsAccessToken = resp.access_token;
+      try { await sSet('gs-token', gsAccessToken); } catch(e){}
+      // Close modal and re-open with connected state
+      var m = document.getElementById('gsModal'); if(m) m.remove();
+      openGoogleSheets();
+    }
+  }).requestAccessToken();
+}
+
+async function saveAndSync() {
+  var inp = document.getElementById('gsSheetInput');
+  if (inp) { gsSheetId = inp.value.trim(); try { await sSet('gs-sheet-id', gsSheetId); } catch(e){} }
+  document.getElementById('gsModal').remove();
+  await syncToSheets();
+}
+
+async function syncToSheets() {
+  if (!gsAccessToken) { openGoogleSheets(); return; }
+  // Prepare data
+  var header = [['JP','Reading','English','Lesson','Type','Custom Tags','SRS','Next Review','Card ID']];
+  var rows = cards.map(function(c){
+    return [c.jp, c.reading||'', c.en, c.lesson||'',
+            c.typeOverride||classifyCard(c), (c.customTags||[]).join('|'),
+            c.srs||0, c.nextReview ? new Date(c.nextReview).toISOString().slice(0,10) : '',
+            c.id];
+  });
+  var values = header.concat(rows);
+  var statusEl = document.getElementById('gsSyncRow');
+
+  try {
+    var sheetId = gsSheetId;
+    if (!sheetId) {
+      // Create a new sheet
+      var create = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+        method:'POST', headers:{'Authorization':'Bearer '+gsAccessToken,'Content-Type':'application/json'},
+        body: JSON.stringify({properties:{title:'語彙帳 — Vocab List'},sheets:[{properties:{title:'Cards'}}]})
+      });
+      var cdata = await create.json();
+      sheetId = cdata.spreadsheetId;
+      gsSheetId = sheetId;
+      try { await sSet('gs-sheet-id', gsSheetId); } catch(e){}
+    }
+    // Clear and write
+    await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+sheetId+'/values/Cards!A1:I10000:clear', {
+      method:'POST', headers:{'Authorization':'Bearer '+gsAccessToken,'Content-Type':'application/json'},
+      body: JSON.stringify({})
+    });
+    var write = await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+sheetId+'/values/Cards!A1?valueInputOption=RAW', {
+      method:'PUT', headers:{'Authorization':'Bearer '+gsAccessToken,'Content-Type':'application/json'},
+      body: JSON.stringify({range:'Cards!A1',majorDimension:'ROWS',values:values})
+    });
+    var wd = await write.json();
+    if (wd.error) throw new Error(wd.error.message);
+    if (statusEl) {
+      statusEl.style.display = 'flex';
+      statusEl.querySelector('span').textContent = '✓ Synced to Google Sheets — ' + cards.length + ' cards';
+    }
+    alert('Synced! Open: https://docs.google.com/spreadsheets/d/' + sheetId);
+  } catch(err) {
+    if (err.message && err.message.indexOf('401') !== -1) { gsAccessToken = ''; initGoogleAuth(); }
+    else alert('Sync error: ' + (err.message || err));
+  }
+}
+
+function closeGSModal() {
+  var m = document.getElementById('gsModal'); if(m) m.remove();
+}
+
+function unlinkSheets() {
+  gsAccessToken = ''; gsSheetId = '';
+  try { sSet('gs-client-id',''); sSet('gs-sheet-id',''); sSet('gs-token',''); } catch(e){}
+  var m = document.getElementById('gsModal'); if(m) m.remove();
+  var sr = document.getElementById('gsSyncRow'); if(sr) sr.style.display='none';
+}
+
+// Restore Google Sheets state on load
+async function loadGSState() {
+  try {
+    var cid = await sGet('gs-client-id'); if (cid && cid.value) GS_CLIENT_ID = cid.value;
+    var sid = await sGet('gs-sheet-id');  if (sid && sid.value) { gsSheetId = sid.value; }
+    var tok = await sGet('gs-token');     if (tok && tok.value) {
+      gsAccessToken = tok.value;
+      var sr = document.getElementById('gsSyncRow');
+      if (sr && gsSheetId) sr.style.display = 'flex';
+    }
+  } catch(e){}
+}
+
+
+// ── ROMAJI → HIRAGANA CONVERTER ──────────────────────────────────────────────
+function romajiToHiragana(r) {
+  if (!r) return '';
+  var s = r.toLowerCase()
+    // Long vowels / special
+    .replace(/ou/g,'おう').replace(/uu/g,'うう')
+    // Double consonants → っ + consonant
+    .replace(/([kstpgzdbcjfhmnrwy])/g,'っ$1')
+    // Three-char combos first
+    .replace(/chi/g,'ち').replace(/tsu/g,'つ').replace(/shi/g,'し')
+    .replace(/sha/g,'しゃ').replace(/shu/g,'しゅ').replace(/sho/g,'しょ')
+    .replace(/cha/g,'ちゃ').replace(/chu/g,'ちゅ').replace(/cho/g,'ちょ')
+    .replace(/tya/g,'ちゃ').replace(/tyu/g,'ちゅ').replace(/tyo/g,'ちょ')
+    .replace(/dzu/g,'づ').replace(/dji/g,'ぢ')
+    .replace(/kya/g,'きゃ').replace(/kyu/g,'きゅ').replace(/kyo/g,'きょ')
+    .replace(/gya/g,'ぎゃ').replace(/gyu/g,'ぎゅ').replace(/gyo/g,'ぎょ')
+    .replace(/nya/g,'にゃ').replace(/nyu/g,'にゅ').replace(/nyo/g,'にょ')
+    .replace(/hya/g,'ひゃ').replace(/hyu/g,'ひゅ').replace(/hyo/g,'ひょ')
+    .replace(/bya/g,'びゃ').replace(/byu/g,'びゅ').replace(/byo/g,'びょ')
+    .replace(/pya/g,'ぴゃ').replace(/pyu/g,'ぴゅ').replace(/pyo/g,'ぴょ')
+    .replace(/mya/g,'みゃ').replace(/myu/g,'みゅ').replace(/myo/g,'みょ')
+    .replace(/rya/g,'りゃ').replace(/ryu/g,'りゅ').replace(/ryo/g,'りょ')
+    .replace(/jya/g,'じゃ').replace(/jyu/g,'じゅ').replace(/jyo/g,'じょ')
+    .replace(/zya/g,'じゃ').replace(/zyu/g,'じゅ').replace(/zyo/g,'じょ')
+    .replace(/ja/g,'じゃ').replace(/ju/g,'じゅ').replace(/jo/g,'じょ')
+    // Two-char combos
+    .replace(/ka/g,'か').replace(/ki/g,'き').replace(/ku/g,'く').replace(/ke/g,'け').replace(/ko/g,'こ')
+    .replace(/sa/g,'さ').replace(/si/g,'し').replace(/su/g,'す').replace(/se/g,'せ').replace(/so/g,'そ')
+    .replace(/ta/g,'た').replace(/ti/g,'ち').replace(/te/g,'て').replace(/to/g,'と')
+    .replace(/na/g,'な').replace(/ni/g,'に').replace(/nu/g,'ぬ').replace(/ne/g,'ね').replace(/no/g,'の')
+    .replace(/ha/g,'は').replace(/hi/g,'ひ').replace(/fu/g,'ふ').replace(/he/g,'へ').replace(/ho/g,'ほ')
+    .replace(/hu/g,'ふ')
+    .replace(/ma/g,'ま').replace(/mi/g,'み').replace(/mu/g,'む').replace(/me/g,'め').replace(/mo/g,'も')
+    .replace(/ya/g,'や').replace(/yu/g,'ゆ').replace(/yo/g,'よ')
+    .replace(/ra/g,'ら').replace(/ri/g,'り').replace(/ru/g,'る').replace(/re/g,'れ').replace(/ro/g,'ろ')
+    .replace(/wa/g,'わ').replace(/wi/g,'ゐ').replace(/we/g,'ゑ').replace(/wo/g,'を')
+    .replace(/ga/g,'が').replace(/gi/g,'ぎ').replace(/gu/g,'ぐ').replace(/ge/g,'げ').replace(/go/g,'ご')
+    .replace(/za/g,'ざ').replace(/zi/g,'じ').replace(/zu/g,'ず').replace(/ze/g,'ぜ').replace(/zo/g,'ぞ')
+    .replace(/da/g,'だ').replace(/di/g,'ぢ').replace(/du/g,'づ').replace(/de/g,'で').replace(/do/g,'ど')
+    .replace(/ba/g,'ば').replace(/bi/g,'び').replace(/bu/g,'ぶ').replace(/be/g,'べ').replace(/bo/g,'ぼ')
+    .replace(/pa/g,'ぱ').replace(/pi/g,'ぴ').replace(/pu/g,'ぷ').replace(/pe/g,'ぺ').replace(/po/g,'ぽ')
+    // Single vowels
+    .replace(/a/g,'あ').replace(/i/g,'い').replace(/u/g,'う').replace(/e/g,'え').replace(/o/g,'お')
+    // n before consonants/end
+    .replace(/n(?=[^aiueo]|$)/g,'ん')
+    .replace(/n/g,'ん');
+  return s;
+}
+
+
+function renderStats() {
+  var total   = cards.length;
+  var learned = cards.filter(function(c){ return c.srs>=2; }).length;
+  var due     = cards.filter(function(c){ return c.nextReview<=Date.now(); }).length;
+  document.getElementById('statTotal').textContent   = total;
+  document.getElementById('statLearned').textContent = learned;
+  document.getElementById('statDue').textContent     = due;
+  var counts = [0,1,2,3].map(function(l){ return cards.filter(function(c){ return Math.min(c.srs,3)===l; }).length; });
+  var mx     = Math.max.apply(null, counts.concat([1]));
+  var colors = ['#aaa','#f57f17','#43a047','#1565c0'];
+  var labels = ['New','Learning','Review','Mastered'];
+  document.getElementById('srsBars').innerHTML = labels.map(function(l,i){
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+      + '<div style="width:70px;font-size:12px;color:var(--muted)">' + l + '</div>'
+      + '<div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">'
+      + '<div style="height:100%;width:'+Math.round(counts[i]/mx*100)+'%;background:'+colors[i]+';border-radius:4px"></div>'
+      + '</div><div style="width:28px;font-size:12px;color:var(--muted);text-align:right">' + counts[i] + '</div></div>';
+  }).join('');
+}
+
+// ── INPUT PROCESSING ────────────────────────────────────────────────────────
+function setStatus(msg, isErr) {
+  var el = document.getElementById('inputStatus');
+  el.style.display = '';
+  el.textContent   = msg;
+  el.className     = 'status-msg ' + (isErr ? 'status-err' : 'status-ok');
+}
+
+function handleCSV(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev){ document.getElementById('pasteInput').value = ev.target.result; setStatus('File loaded — click Extract'); };
+  r.readAsText(f);
+}
+
+async function handleImage(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = async function(ev) {
+    setStatus('Reading image…');
+    document.getElementById('processBtn').disabled = true;
+    try {
+      var resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
+        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000,
+          messages:[{role:'user',content:[
+            {type:'image',source:{type:'base64',media_type:f.type,data:ev.target.result.split(',')[1]}},
+            {type:'text',text:'Extract all Japanese vocabulary from this image. List each as: japanese | reading | english. One per line.'}
+          ]}] })
+      });
+      var d = await resp.json();
+      document.getElementById('pasteInput').value = d.content.map(function(c){ return c.text||''; }).join('');
+      setStatus('Image read — click Extract & Add Cards');
+    } catch(err){ setStatus('Error reading image', true); }
+    document.getElementById('processBtn').disabled = false;
+  };
+  r.readAsDataURL(f);
+}
+
+async function handlePDF(e) {
+  var f = e.target.files[0]; if (!f) return;
+  setStatus('Loading PDF…');
+  try {
+    var buf = await f.arrayBuffer();
+    pdfDoc = await pdfjsLib.getDocument({data:buf}).promise;
+    var box = document.getElementById('pdfBox');
+    box.style.display = '';
+    document.getElementById('pdfFileName').textContent = f.name + ' (' + pdfDoc.numPages + ' pages)';
+    document.getElementById('pdfFrom').value = 1;
+    document.getElementById('pdfTo').value   = Math.min(pdfDoc.numPages, 20);
+    document.getElementById('pdfTo').max     = pdfDoc.numPages;
+    document.getElementById('pdfBar').style.width = '0%';
+    document.getElementById('pdfLog').textContent  = '';
+    setStatus('PDF loaded — set page range and click Extract pages.');
+  } catch(err){ setStatus('Could not load PDF.', true); }
+}
+
+async function startPDF() {
+  if (!pdfDoc) { setStatus('Upload a PDF first.', true); return; }
+  pdfStop = false;
+  var from  = parseInt(document.getElementById('pdfFrom').value) || 1;
+  var to    = Math.min(parseInt(document.getElementById('pdfTo').value) || pdfDoc.numPages, pdfDoc.numPages);
+  var log   = document.getElementById('pdfLog');
+  var bar   = document.getElementById('pdfBar');
+  var added = 0;
+  log.textContent = '';
+
+  for (var p = from; p <= to; p++) {
+    if (pdfStop) { log.textContent += '\nStopped.'; break; }
+    bar.style.width = Math.round(((p-from)/(to-from+1))*100) + '%';
+    log.textContent = 'Reading page ' + p + '/' + to + '...';
+    try {
+      var page = await pdfDoc.getPage(p);
+      var vp   = page.getViewport({scale:1.5});
+      var cv   = document.createElement('canvas');
+      cv.width = vp.width; cv.height = vp.height;
+      await page.render({canvasContext:cv.getContext('2d'), viewport:vp}).promise;
+      var b64  = cv.toDataURL('image/jpeg', 0.85).split(',')[1];
+      var resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
+        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1200,
+          messages:[{role:'user',content:[
+            {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+            {type:'text',text:'Extract ALL Japanese vocabulary from this textbook page. Return ONLY a JSON array with no markdown. Each item: {"jp":"word","reading":"hiragana","en":"English","type":"vocab","lesson":"","example_jp":"","example_en":""}. If no vocab on this page return [].'}
+          ]}] })
+      });
+      var dj   = await resp.json();
+      var text = dj.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
+      if (text && text !== '[]') {
+        var parsed = JSON.parse(text);
+        var pa = 0;
+        for (var ii=0;ii<parsed.length;ii++) {
+          var item = parsed[ii];
+          if (!item.jp) continue;
+          if (!cards.find(function(c){ return c.jp===item.jp; })) {
+            var _nc0 = {jp:item.jp,reading:item.reading||'',en:item.en||'',type:item.type||'vocab',
+              lesson:item.lesson||'',example_jp:item.example_jp||'',example_en:item.example_en||'',
+              srs:0,nextReview:Date.now(),id:Math.random().toString(36).slice(2),customTags:[],typeOverride:''};
+            _nc0.typeOverride = classifyCard(_nc0);
+            cards.push(_nc0);
+            added++; pa++;
+          }
+        }
+        await saveCards();
+        log.textContent = 'Page ' + p + ': +' + pa + ' (' + added + ' total)';
+      } else {
+        log.textContent = 'Page ' + p + ': no vocab';
+      }
+    } catch(err) {
+      log.textContent = 'Page ' + p + ': error — ' + (err.message||err);
+    }
+    await new Promise(function(res){ setTimeout(res, 300); });
+  }
+  bar.style.width = '100%';
+  log.textContent += '\nDone! Added ' + added + ' cards.';
+  setStatus('Added ' + added + ' cards from PDF.');
+}
+
+async function processInput() {
+  var raw = document.getElementById('pasteInput').value.trim();
+  if (!raw) return;
+  setStatus('Claude is parsing…');
+  document.getElementById('processBtn').disabled = true;
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000,
+        messages:[{role:'user',content:'Parse this Japanese study material and return ONLY a JSON array with no markdown. Each: {"jp":"word","reading":"hiragana","en":"English","type":"vocab","lesson":"","example_jp":"","example_en":""}. Input:\n' + raw}] })
+    });
+    var d    = await resp.json();
+    var text = d.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
+    var parsed = JSON.parse(text);
+    var added = 0;
+    parsed.forEach(function(item){
+      if (!item.jp) return;
+      if (!cards.find(function(c){ return c.jp===item.jp; })) {
+        var _nc1 = {jp:item.jp,reading:item.reading||'',en:item.en||'',type:item.type||'vocab',
+          lesson:item.lesson||'',example_jp:item.example_jp||'',example_en:item.example_en||'',
+          srs:0,nextReview:Date.now(),id:Math.random().toString(36).slice(2),customTags:[],typeOverride:''};
+        _nc1.typeOverride = classifyCard(_nc1);
+        cards.push(_nc1);
+        added++;
+      }
+    });
+    await saveCards();
+    setStatus('Added ' + added + ' card' + (added!==1?'s':'') + '!');
+    document.getElementById('pasteInput').value = '';
+  } catch(err){ setStatus('Parse error — try again.', true); }
+  document.getElementById('processBtn').disabled = false;
+}
+
+// ── BOOT ────────────────────────────────────────────────────────────────────
+var _apiKey = '';
+
+function getApiKey() {
+  if (_apiKey) return _apiKey;
+  // Try localStorage fallback
+  return localStorage.getItem('goichou-apikey') || '';
+}
+
+async function loadApiKey() {
+  try {
+    var r = await sGet('goichou-apikey');
+    if (r && r.value) { _apiKey = r.value; }
+    else { var lk = localStorage.getItem('goichou-apikey'); if(lk) _apiKey = lk; }
+  } catch(e) { var lk = localStorage.getItem('goichou-apikey'); if(lk) _apiKey = lk; }
+}
+
+async function saveApiKey() {
+  var inp = document.getElementById('apiKeyInput');
+  if (!inp) return;
+  var key = inp.value.trim();
+  if (!key) return;
+  _apiKey = key;
+  localStorage.setItem('goichou-apikey', key);
+  try { await sSet('goichou-apikey', key); } catch(e) {}
+  inp.type = 'password';
+  var st = document.getElementById('apiKeyStatus');
+  if (st) { st.style.display=''; st.style.color='var(--accent2)'; st.textContent = '✓ API key saved!'; setTimeout(function(){ st.style.display='none'; }, 2000); }
+}
+
+function loadSettingsUI() {
+  // Populate API key field (masked)
+  var inp = document.getElementById('apiKeyInput');
+  if (inp && _apiKey) { inp.value = _apiKey; }
+  // Populate GS fields
+  var ci = document.getElementById('gsClientIdInput');
+  var si = document.getElementById('gsSheetIdInput');
+  if (ci && GS_CLIENT_ID) ci.value = GS_CLIENT_ID;
+  if (si && gsSheetId)    si.value = gsSheetId;
+  // Show sync button if connected
+  var sb = document.getElementById('gsSyncBtn');
+  if (sb) sb.style.display = gsAccessToken ? '' : 'none';
+  // Sync showKanji buttons
+  var stnK = document.getElementById('stnKanji');
+  var stnH = document.getElementById('stnHira');
+  if (stnK) { stnK.style.background = showKanji ? 'var(--accent)' : 'var(--hover)'; stnK.style.color = showKanji ? '#fff' : 'var(--muted)'; }
+  if (stnH) { stnH.style.background = showKanji ? 'var(--hover)' : 'var(--accent)'; stnH.style.color = showKanji ? 'var(--muted)' : '#fff'; }
+}
+
+function saveGSSettings() {
+  var ci = document.getElementById('gsClientIdInput');
+  var si = document.getElementById('gsSheetIdInput');
+  if (ci && ci.value.trim()) GS_CLIENT_ID = ci.value.trim();
+  if (si && si.value.trim()) { gsSheetId = si.value.trim(); try { sSet('gs-sheet-id', gsSheetId); } catch(e){} }
+  var st = document.getElementById('gsSettingsStatus');
+  if (!GS_CLIENT_ID) {
+    if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent='Please enter a Client ID.'; }
+    return;
+  }
+  if (st) { st.style.display=''; st.style.color='var(--muted)'; st.textContent='Connecting…'; }
+  try { sSet('gs-client-id', GS_CLIENT_ID); } catch(e){}
+  initGoogleAuth();
+}
+
+loadCards();
+loadApiKey();
+loadGSState();
+</script>
+</body>
+</html>
