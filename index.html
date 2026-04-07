@@ -382,6 +382,7 @@ input[type=file]{display:none}
         <input id="apiKeyInput" type="password" placeholder="sk-ant-api03-…"
           style="flex:1;border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:13px;font-family:var(--font-ui);background:var(--paper);color:var(--ink);outline:none">
         <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
+        <button class="btn btn-secondary" onclick="testApiKey()">Test</button>
       </div>
       <div id="apiKeyStatus" style="font-size:12px;margin-top:8px;display:none"></div>
     </div>
@@ -1476,6 +1477,7 @@ async function renderFillIn() {
       })
     });
     var d = await resp.json();
+    if (d.error) throw new Error('API: ' + (d.error.message || d.error.type));
     var txt = d.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
     fillData = JSON.parse(txt);
     var formLabel = (fillData.form_used && classifyCard(card)==='verb')
@@ -1512,7 +1514,7 @@ async function renderFillIn() {
       sent.textContent = fillData.sentence;
     }
   } catch(e) {
-    el.innerHTML = '<div class="empty-state">Could not generate.<br><br><button class="btn btn-primary" onclick="nextCard()">Try another &#x2192;</button></div>';
+    el.innerHTML = '<div class="empty-state">Could not generate.<br><span style="font-size:11px;color:var(--accent)">' + (e.message||e) + '</span><br><br><button class="btn btn-primary" onclick="nextCard()">Try another &#x2192;</button></div>';
   }
 }
 
@@ -1576,6 +1578,7 @@ async function renderGrammarQuiz() {
         messages:[{role:'user',content:prompt}] })
     });
     var d = await resp.json();
+    if (d.error) throw new Error('API: ' + (d.error.message || d.error.type));
     var txt = d.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
     var q = JSON.parse(txt);
     var letters = ['A','B','C','D'];
@@ -1602,7 +1605,7 @@ async function renderGrammarQuiz() {
       + '<div class="expl" id="quizExpl"></div>'
       + '<button class="next-btn" id="nextBtn" onclick="nextCard()">Next →</button>';
   } catch(e) {
-    el.innerHTML = '<div class="empty-state">Could not generate.<br><br><button class="btn btn-primary" onclick="nextCard()">Try again &#x2192;</button></div>';
+    el.innerHTML = '<div class="empty-state">Could not generate.<br><span style="font-size:11px;color:var(--accent)">' + (e.message||e) + '</span><br><br><button class="btn btn-primary" onclick="nextCard()">Try again &#x2192;</button></div>';
   }
 }
 
@@ -2561,6 +2564,33 @@ async function saveApiKey() {
   inp.type = 'password';
   var st = document.getElementById('apiKeyStatus');
   if (st) { st.style.display=''; st.style.color='var(--accent2)'; st.textContent = '✓ API key saved!'; setTimeout(function(){ st.style.display='none'; }, 2000); }
+}
+
+async function testApiKey() {
+  var key = getApiKey();
+  var st = document.getElementById('apiKeyStatus');
+  if (!key) {
+    if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent = '✗ No API key saved. Enter one and click Save first.'; }
+    return;
+  }
+  if (st) { st.style.display=''; st.style.color='var(--muted)'; st.textContent = 'Testing…'; }
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json', 'x-api-key': key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:20, messages:[{role:'user',content:'Say OK'}] })
+    });
+    var d = await resp.json();
+    if (d.error) {
+      if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent = '✗ API error: ' + (d.error.message || d.error.type || JSON.stringify(d.error)); }
+    } else if (d.content) {
+      if (st) { st.style.display=''; st.style.color='var(--accent2)'; st.textContent = '✓ API key works! Response: ' + (d.content[0].text||'').slice(0,30); }
+    } else {
+      if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent = '✗ Unexpected response: ' + JSON.stringify(d).slice(0,80); }
+    }
+  } catch(e) {
+    if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent = '✗ Network error: ' + e.message; }
+  }
 }
 
 function loadSettingsUI() {
