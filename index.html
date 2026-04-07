@@ -48,8 +48,8 @@ textarea:focus{border-color:var(--accent2)}
 .srs-badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;white-space:nowrap}
 .srs-0{background:#f3f0e8;color:var(--muted)}.srs-1{background:#fff3e0;color:#b06000}
 .srs-2{background:#e8f5e9;color:#2e7d32}.srs-3{background:#e3f2fd;color:#1565c0}
-.word-delete{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--border);font-size:16px;opacity:0;transition:opacity .2s}
-.word-item:hover .word-delete{opacity:1}
+.word-delete{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;opacity:.4;transition:opacity .2s}
+.word-item:hover .word-delete,.word-delete:active{opacity:1}
 .empty-state{text-align:center;padding:32px;color:var(--muted);font-size:14px}
 .filter-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
 .f-btn{padding:4px 10px;border-radius:16px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:11px;font-family:var(--font-ui);color:var(--muted);transition:all .15s;font-weight:500}
@@ -231,6 +231,31 @@ input[type=file]{display:none}
       <b style="color:var(--ink)">MNN1 &amp; MNN2 fully loaded</b> — all 50 lessons pre-loaded!<br>
       Upload a PDF to extract more vocab • Any paste format works
     </div>
+    <div class="card" style="margin-top:0">
+      <div class="section-label">Quick add (no API needed)</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="manualJP" type="text" placeholder="日本語 (e.g. 食べます)"
+            style="flex:2;min-width:120px;border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-family:var(--font-jp);font-size:15px;background:var(--paper);color:var(--ink);outline:none"
+            onkeydown="if(event.key==='Enter'){document.getElementById('manualEN').focus()}">
+          <input id="manualReading" type="text" placeholder="Reading (e.g. たべます)"
+            style="flex:2;min-width:120px;border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-family:var(--font-jp);font-size:15px;background:var(--paper);color:var(--ink);outline:none"
+            onkeydown="if(event.key==='Enter'){document.getElementById('manualEN').focus()}">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="manualEN" type="text" placeholder="English (e.g. eat)"
+            style="flex:3;min-width:140px;border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-size:14px;font-family:var(--font-ui);background:var(--paper);color:var(--ink);outline:none"
+            onkeydown="if(event.key==='Enter'){addManualCard()}">
+          <input id="manualLesson" type="text" placeholder="Lesson (e.g. L6)"
+            style="flex:1;min-width:70px;border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-size:14px;font-family:var(--font-ui);background:var(--paper);color:var(--ink);outline:none"
+            onkeydown="if(event.key==='Enter'){addManualCard()}">
+        </div>
+        <div class="action-row" style="margin-top:4px">
+          <div id="manualStatus" style="font-size:12px;color:var(--muted);flex:1"></div>
+          <button class="btn btn-primary" onclick="addManualCard()">+ Add Card</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ── MY LIST ── -->
@@ -261,6 +286,7 @@ input[type=file]{display:none}
       <div class="filter-row" id="listCustomTagFilters" style="display:none"></div>
       <div class="filter-row" style="margin-bottom:4px">
         <button class="f-btn" id="listWeakBtn" onclick="toggleListWeak(this)">⚡ Weak only</button>
+        <button class="f-btn" id="listNewBtn" onclick="toggleListNew(this)">🆕 New only</button>
       </div>
       <div class="word-list" id="wordList"><div class="empty-state">Loading…</div></div>
     </div>
@@ -277,6 +303,7 @@ input[type=file]{display:none}
         <button class="btn btn-secondary" style="font-size:11px;padding:5px 11px" onclick="selectMNN2()">MNN2 L26–50</button>
         <button class="btn btn-secondary" style="font-size:11px;padding:5px 11px" onclick="clearLessons()">None</button>
         <button class="btn" id="weakBtn" style="font-size:11px;padding:5px 11px;background:var(--hover);color:var(--muted)" onclick="toggleWeakFilter(this)">⚡ Weak only</button>
+        <button class="btn" id="newBtn" style="font-size:11px;padding:5px 11px;background:var(--hover);color:var(--muted)" onclick="toggleNewFilter(this)">🆕 New only</button>
       </div>
     </div>
     <div class="card" style="padding:14px;margin-bottom:12px">
@@ -398,7 +425,7 @@ input[type=file]{display:none}
       <div class="section-label">About</div>
       MNN1 &amp; MNN2 Vocab Study App<br>
       Author: Greg Richardson<br>
-      MNN1 L1–25 + MNN2 L26–50 &nbsp;&bull;&nbsp; 651 seed cards<br>
+      MNN1 L1–25 + MNN2 L26–50 &nbsp;&bull;&nbsp; 1310 seed cards<br>
       Powered by Claude Sonnet &nbsp;&bull;&nbsp; SRS spaced repetition
     </div>
   </div>
@@ -423,6 +450,16 @@ const SEED=[
 {jp:"起きます",r:"おきます",en:"get up, wake up",l:"L4"},{jp:"寝ます",r:"ねます",en:"sleep, go to bed",l:"L4"},{jp:"働きます",r:"はたらきます",en:"work",l:"L4"},{jp:"休みます",r:"やすみます",en:"take a rest, holiday",l:"L4"},{jp:"勉強します",r:"べんきょうします",en:"study",l:"L4"},{jp:"終わります",r:"おわります",en:"finish",l:"L4"},{jp:"銀行",r:"ぎんこう",en:"bank",l:"L4"},{jp:"郵便局",r:"ゆうびんきょく",en:"post office",l:"L4"},{jp:"図書館",r:"としょかん",en:"library",l:"L4"},{jp:"美術館",r:"びじゅつかん",en:"art museum",l:"L4"},{jp:"今",r:"いま",en:"now",l:"L4"},{jp:"半",r:"はん",en:"half",l:"L4"},{jp:"午前",r:"ごぜん",en:"a.m., morning",l:"L4"},{jp:"午後",r:"ごご",en:"p.m., afternoon",l:"L4"},{jp:"朝",r:"あさ",en:"morning",l:"L4"},{jp:"昼",r:"ひる",en:"daytime, noon",l:"L4"},{jp:"晩",r:"ばん",en:"night, evening",l:"L4"},{jp:"昨日",r:"きのう",en:"yesterday",l:"L4"},{jp:"今日",r:"きょう",en:"today",l:"L4"},{jp:"明日",r:"あした",en:"tomorrow",l:"L4"},{jp:"月曜日",r:"げつようび",en:"Monday",l:"L4"},{jp:"火曜日",r:"かようび",en:"Tuesday",l:"L4"},{jp:"水曜日",r:"すいようび",en:"Wednesday",l:"L4"},{jp:"木曜日",r:"もくようび",en:"Thursday",l:"L4"},{jp:"金曜日",r:"きんようび",en:"Friday",l:"L4"},{jp:"土曜日",r:"どようび",en:"Saturday",l:"L4"},{jp:"日曜日",r:"にちようび",en:"Sunday",l:"L4"},{jp:"誕生日",r:"たんじょうび",en:"birthday",l:"L4"},
 // L5
 {jp:"行きます",r:"いきます",en:"go",l:"L5"},{jp:"来ます",r:"きます",en:"come",l:"L5"},{jp:"帰ります",r:"かえります",en:"go home, return",l:"L5"},{jp:"電車",r:"でんしゃ",en:"train",l:"L5"},{jp:"飛行機",r:"ひこうき",en:"airplane",l:"L5"},{jp:"バス",r:"",en:"bus",l:"L5"},{jp:"タクシー",r:"",en:"taxi",l:"L5"},{jp:"船",r:"ふね",en:"ship, boat",l:"L5"},{jp:"新幹線",r:"しんかんせん",en:"Shinkansen (bullet train)",l:"L5"},{jp:"一日",r:"ついたち",en:"1st day of the month",l:"L5"},{jp:"二日",r:"ふつか",en:"2nd, two days",l:"L5"},{jp:"三日",r:"みっか",en:"3rd, three days",l:"L5"},{jp:"四日",r:"よっか",en:"4th, four days",l:"L5"},{jp:"五日",r:"いつか",en:"5th, five days",l:"L5"},{jp:"十日",r:"とおか",en:"10th, ten days",l:"L5"},{jp:"二十日",r:"はつか",en:"20th, twenty days",l:"L5"},
+// L1 additional
+{jp:"〜さん",r:"さん",en:"Mr., Ms. (suffix for politeness)",l:"L1"},{jp:"〜ちゃん",r:"ちゃん",en:"(suffix for a child's name)",l:"L1"},{jp:"〜じん",r:"じん",en:"a national of ~ (e.g. アメリカじん)",l:"L1"},{jp:"教師",r:"きょうし",en:"teacher, instructor",l:"L1"},{jp:"社員",r:"しゃいん",en:"employee of ~ company",l:"L1"},{jp:"だれ",r:"だれ",en:"who",l:"L1"},{jp:"〜歳",r:"さい",en:"~ years old",l:"L1"},{jp:"何歳",r:"なんさい",en:"how old",l:"L1"},{jp:"〜から来ました",r:"からきました",en:"I'm from ~ (country)",l:"L1"},{jp:"失礼ですが",r:"しつれいですが",en:"Excuse me, but",l:"L1"},{jp:"お名前は？",r:"おなまえは",en:"May I have your name?",l:"L1"},{jp:"アメリカ",r:"",en:"U.S.A.",l:"L1"},{jp:"イギリス",r:"",en:"U.K.",l:"L1"},{jp:"インド",r:"",en:"India",l:"L1"},{jp:"インドネシア",r:"",en:"Indonesia",l:"L1"},{jp:"韓国",r:"かんこく",en:"South Korea",l:"L1"},{jp:"タイ",r:"",en:"Thailand",l:"L1"},{jp:"中国",r:"ちゅうごく",en:"China",l:"L1"},{jp:"ドイツ",r:"",en:"Germany",l:"L1"},{jp:"日本",r:"にほん",en:"Japan",l:"L1"},{jp:"ブラジル",r:"",en:"Brazil",l:"L1"},
+// L2 additional
+{jp:"この〜",r:"この",en:"this ~ here",l:"L2"},{jp:"その〜",r:"その",en:"that ~ near the listener",l:"L2"},{jp:"あの〜",r:"あの",en:"that ~ over there",l:"L2"},{jp:"カード",r:"",en:"(credit) card",l:"L2"},{jp:"シャープペンシル",r:"",en:"mechanical pencil",l:"L2"},{jp:"車",r:"くるま",en:"car, vehicle",l:"L2"},{jp:"チョコレート",r:"",en:"chocolate",l:"L2"},{jp:"コーヒー",r:"",en:"coffee",l:"L2"},{jp:"〜語",r:"ご",en:"~ language",l:"L2"},{jp:"そう",r:"そう",en:"so",l:"L2"},{jp:"あのう",r:"あのう",en:"Er... (used to show hesitation)",l:"L2"},{jp:"えっ",r:"えっ",en:"Oh? What! (surprise)",l:"L2"},{jp:"どうぞ",r:"どうぞ",en:"Here you are. (offering something)",l:"L2"},{jp:"お土産",r:"おみやげ",en:"souvenir, present",l:"L2"},{jp:"お世話になります",r:"おせわになります",en:"Thank you in advance for your kindness.",l:"L2"},
+// L3 additional
+{jp:"受付",r:"うけつけ",en:"reception desk",l:"L3"},{jp:"ロビー",r:"",en:"lobby",l:"L3"},{jp:"階段",r:"かいだん",en:"staircase",l:"L3"},{jp:"エスカレーター",r:"",en:"escalator",l:"L3"},{jp:"自動販売機",r:"じどうはんばいき",en:"vending machine",l:"L3"},{jp:"お国",r:"おくに",en:"country (polite)",l:"L3"},{jp:"うち",r:"うち",en:"house, home",l:"L3"},{jp:"売り場",r:"うりば",en:"department, counter (in a store)",l:"L3"},{jp:"地下",r:"ちか",en:"basement",l:"L3"},{jp:"〜階",r:"かい",en:"~th floor",l:"L3"},{jp:"何階",r:"なんがい",en:"what floor",l:"L3"},{jp:"〜円",r:"えん",en:"~ yen",l:"L3"},{jp:"いくら",r:"いくら",en:"how much",l:"L3"},{jp:"百",r:"ひゃく",en:"hundred",l:"L3"},{jp:"千",r:"せん",en:"thousand",l:"L3"},{jp:"万",r:"まん",en:"ten thousand",l:"L3"},{jp:"すみません",r:"すみません",en:"Excuse me.",l:"L3"},{jp:"いらっしゃいませ",r:"いらっしゃいませ",en:"Welcome./May I help you?",l:"L3"},
+// L4 additional
+{jp:"デパート",r:"",en:"department store",l:"L4"},{jp:"〜時",r:"じ",en:"~ o'clock",l:"L4"},{jp:"〜分",r:"ふん",en:"~ minute",l:"L4"},{jp:"何時",r:"なんじ",en:"what time",l:"L4"},{jp:"何分",r:"なんぷん",en:"what minute",l:"L4"},{jp:"おととい",r:"おととい",en:"the day before yesterday",l:"L4"},{jp:"あさって",r:"あさって",en:"the day after tomorrow",l:"L4"},{jp:"今朝",r:"けさ",en:"this morning",l:"L4"},{jp:"今晩",r:"こんばん",en:"this evening, tonight",l:"L4"},{jp:"休み",r:"やすみ",en:"rest, a holiday, a day off",l:"L4"},{jp:"昼休み",r:"ひるやすみ",en:"lunchtime",l:"L4"},{jp:"毎朝",r:"まいあさ",en:"every morning",l:"L4"},{jp:"毎晩",r:"まいばん",en:"every night",l:"L4"},{jp:"毎日",r:"まいにち",en:"every day",l:"L4"},{jp:"会議",r:"かいぎ",en:"meeting, conference",l:"L4"},{jp:"何曜日",r:"なんようび",en:"what day of the week",l:"L4"},{jp:"〜から",r:"から",en:"from ~",l:"L4"},{jp:"〜まで",r:"まで",en:"up to ~, until ~",l:"L4"},{jp:"〜と",r:"と",en:"and (connects nouns)",l:"L4"},{jp:"番号",r:"ばんごう",en:"number",l:"L4"},{jp:"何番",r:"なんばん",en:"what number",l:"L4"},
+// L5 additional
+{jp:"学校",r:"がっこう",en:"school",l:"L5"},{jp:"スーパー",r:"",en:"supermarket",l:"L5"},{jp:"駅",r:"えき",en:"station",l:"L5"},{jp:"地下鉄",r:"ちかてつ",en:"underground, subway",l:"L5"},{jp:"自転車",r:"じてんしゃ",en:"bicycle",l:"L5"},{jp:"歩いて",r:"あるいて",en:"on foot",l:"L5"},{jp:"人",r:"ひと",en:"person, people",l:"L5"},{jp:"友達",r:"ともだち",en:"friend",l:"L5"},{jp:"彼",r:"かれ",en:"he, boyfriend",l:"L5"},{jp:"彼女",r:"かのじょ",en:"she, girlfriend",l:"L5"},{jp:"家族",r:"かぞく",en:"family",l:"L5"},{jp:"一人で",r:"ひとりで",en:"alone, by oneself",l:"L5"},{jp:"先週",r:"せんしゅう",en:"last week",l:"L5"},{jp:"今週",r:"こんしゅう",en:"this week",l:"L5"},{jp:"来週",r:"らいしゅう",en:"next week",l:"L5"},{jp:"先月",r:"せんげつ",en:"last month",l:"L5"},{jp:"今月",r:"こんげつ",en:"this month",l:"L5"},{jp:"来月",r:"らいげつ",en:"next month",l:"L5"},{jp:"去年",r:"きょねん",en:"last year",l:"L5"},{jp:"今年",r:"ことし",en:"this year",l:"L5"},{jp:"来年",r:"らいねん",en:"next year",l:"L5"},{jp:"いつ",r:"いつ",en:"when",l:"L5"},{jp:"六日",r:"むいか",en:"6th, six days",l:"L5"},{jp:"七日",r:"なのか",en:"7th, seven days",l:"L5"},{jp:"八日",r:"ようか",en:"8th, eight days",l:"L5"},{jp:"九日",r:"ここのか",en:"9th, nine days",l:"L5"},{jp:"十四日",r:"じゅうよっか",en:"14th, fourteen days",l:"L5"},{jp:"二十四日",r:"にじゅうよっか",en:"24th, twenty-four days",l:"L5"},{jp:"普通",r:"ふつう",en:"local (train)",l:"L5"},{jp:"急行",r:"きゅうこう",en:"rapid (train)",l:"L5"},{jp:"特急",r:"とっきゅう",en:"express (train)",l:"L5"},{jp:"次の",r:"つぎの",en:"next",l:"L5"},{jp:"〜番線",r:"ばんせん",en:"platform ~, ~th platform",l:"L5"},
 // L6
 {jp:"食べます",r:"たべます",en:"eat",l:"L6"},{jp:"飲みます",r:"のみます",en:"drink",l:"L6"},{jp:"診ます",r:"みます",en:"see, look at, watch",l:"L6"},{jp:"聞きます",r:"ききます",en:"hear, listen",l:"L6"},{jp:"読みます",r:"よみます",en:"read",l:"L6"},{jp:"書きます",r:"かきます",en:"write, draw",l:"L6"},{jp:"買います",r:"かいます",en:"buy",l:"L6"},{jp:"します",r:"します",en:"do",l:"L6"},{jp:"会います",r:"あいます",en:"meet",l:"L6"},{jp:"ご飯",r:"ごはん",en:"meal, cooked rice",l:"L6"},{jp:"朝ご飯",r:"あさごはん",en:"breakfast",l:"L6"},{jp:"昼ご飯",r:"ひるごはん",en:"lunch",l:"L6"},{jp:"晩ご飯",r:"ばんごはん",en:"supper",l:"L6"},{jp:"パン",r:"",en:"bread",l:"L6"},{jp:"卵",r:"たまご",en:"egg",l:"L6"},{jp:"肉",r:"にく",en:"meat",l:"L6"},{jp:"魚",r:"さかな",en:"fish",l:"L6"},{jp:"野菜",r:"やさい",en:"vegetable",l:"L6"},{jp:"果物",r:"くだもの",en:"fruit",l:"L6"},{jp:"水",r:"みず",en:"water",l:"L6"},{jp:"お茶",r:"おちゃ",en:"tea, green tea",l:"L6"},{jp:"紅茶",r:"こうちゃ",en:"black tea",l:"L6"},{jp:"牛乳",r:"ぎゅうにゅう",en:"milk",l:"L6"},{jp:"ジュース",r:"",en:"juice",l:"L6"},{jp:"ビール",r:"",en:"beer",l:"L6"},{jp:"映画",r:"えいが",en:"movie",l:"L6"},{jp:"一緒に",r:"いっしょに",en:"together",l:"L6"},{jp:"時々",r:"ときどき",en:"sometimes",l:"L6"},
 // L7
@@ -443,6 +480,26 @@ const SEED=[
 {jp:"付けます",r:"つけます",en:"turn on",l:"L14"},{jp:"消します",r:"けします",en:"turn off",l:"L14"},{jp:"開けます",r:"あけます",en:"open",l:"L14"},{jp:"閉めます",r:"しめます",en:"close, shut",l:"L14"},{jp:"急ぎます",r:"いそぎます",en:"hurry",l:"L14"},{jp:"待ちます",r:"まちます",en:"wait",l:"L14"},{jp:"曲がります",r:"まがります",en:"turn (to the right)",l:"L14"},{jp:"話します",r:"はなします",en:"speak, talk",l:"L14"},{jp:"始めます",r:"はじめます",en:"start, begin",l:"L14"},{jp:"ゆっくり",r:"ゆっくり",en:"slowly, leisurely",l:"L14"},{jp:"すぐ",r:"すぐ",en:"immediately",l:"L14"},{jp:"また",r:"また",en:"again",l:"L14"},{jp:"住所",r:"じゅうしょ",en:"address",l:"L14"},{jp:"塩",r:"しお",en:"salt",l:"L14"},{jp:"砂糖",r:"さとう",en:"sugar",l:"L14"},
 // L15
 {jp:"立ちます",r:"たちます",en:"stand up",l:"L15"},{jp:"座ります",r:"すわります",en:"sit down",l:"L15"},{jp:"使います",r:"つかいます",en:"use",l:"L15"},{jp:"作ります",r:"つくります",en:"make, produce",l:"L15"},{jp:"売ります",r:"うります",en:"sell",l:"L15"},{jp:"知ります",r:"しります",en:"get to know",l:"L15"},{jp:"知っています",r:"しっています",en:"know",l:"L15"},{jp:"住んでいます",r:"すんでいます",en:"live (in Osaka)",l:"L15"},{jp:"服",r:"ふく",en:"clothes",l:"L15"},{jp:"歯医者",r:"はいしゃ",en:"dentist",l:"L15"},{jp:"独身",r:"どくしん",en:"single, unmarried",l:"L15"},
+// L6 additional
+{jp:"吸います",r:"すいます",en:"smoke (a cigarette)",l:"L6"},{jp:"撮ります",r:"とります",en:"take (a photograph)",l:"L6"},{jp:"手紙",r:"てがみ",en:"letter",l:"L6"},{jp:"レポート",r:"",en:"report",l:"L6"},{jp:"写真",r:"しゃしん",en:"photograph",l:"L6"},{jp:"ビデオ",r:"",en:"video",l:"L6"},{jp:"店",r:"みせ",en:"shop, store",l:"L6"},{jp:"庭",r:"にわ",en:"garden",l:"L6"},{jp:"宿題",r:"しゅくだい",en:"homework",l:"L6"},{jp:"テニス",r:"",en:"tennis",l:"L6"},{jp:"サッカー",r:"",en:"soccer, football",l:"L6"},{jp:"お花見",r:"おはなみ",en:"cherry-blossom viewing",l:"L6"},{jp:"なに",r:"なに",en:"what",l:"L6"},{jp:"ちょっと",r:"ちょっと",en:"a little while, a little bit",l:"L6"},{jp:"いつも",r:"いつも",en:"always, usually",l:"L6"},{jp:"それから",r:"それから",en:"after that, and then",l:"L6"},{jp:"ええ",r:"ええ",en:"yes",l:"L6"},{jp:"お酒",r:"おさけ",en:"alcohol, Japanese rice wine",l:"L6"},{jp:"たばこ",r:"たばこ",en:"tobacco, cigarette",l:"L6"},
+// L7 additional
+{jp:"切ります",r:"きります",en:"cut, slice",l:"L7"},{jp:"送ります",r:"おくります",en:"send",l:"L7"},{jp:"かけます",r:"かけます",en:"make (a telephone call)",l:"L7"},{jp:"手",r:"て",en:"hand, arm",l:"L7"},{jp:"ケータイ",r:"",en:"mobile phone, cell phone",l:"L7"},{jp:"メール",r:"",en:"e-mail",l:"L7"},{jp:"年賀状",r:"ねんがじょう",en:"New Year's greeting card",l:"L7"},{jp:"パンチ",r:"",en:"punch",l:"L7"},{jp:"ホッチキス",r:"",en:"stapler",l:"L7"},{jp:"セロテープ",r:"",en:"Sellotape, clear adhesive tape",l:"L7"},{jp:"消しゴム",r:"けしごむ",en:"rubber, eraser",l:"L7"},{jp:"紙",r:"かみ",en:"paper",l:"L7"},{jp:"シャツ",r:"",en:"shirt",l:"L7"},{jp:"荷物",r:"にもつ",en:"luggage, baggage, parcel",l:"L7"},{jp:"切符",r:"きっぷ",en:"ticket",l:"L7"},{jp:"クリスマス",r:"",en:"Christmas",l:"L7"},{jp:"父",r:"ちち",en:"(my) father",l:"L7"},{jp:"母",r:"はは",en:"(my) mother",l:"L7"},{jp:"お父さん",r:"おとうさん",en:"(someone else's) father",l:"L7"},{jp:"お母さん",r:"おかあさん",en:"(someone else's) mother",l:"L7"},{jp:"もう",r:"もう",en:"already",l:"L7"},{jp:"これから",r:"これから",en:"from now on, soon",l:"L7"},{jp:"いただきます",r:"いただきます",en:"said before starting to eat or drink",l:"L7"},{jp:"ごちそうさま",r:"ごちそうさま",en:"said after eating or drinking",l:"L7"},
+// L8 additional
+{jp:"ハンサム",r:"",en:"handsome",l:"L8"},{jp:"ひま",r:"ひま",en:"free (time)",l:"L8"},{jp:"すてき",r:"すてき",en:"fine, nice, wonderful",l:"L8"},{jp:"つめたい",r:"つめたい",en:"cold (referring to touch)",l:"L8"},{jp:"ひくい",r:"ひくい",en:"low",l:"L8"},{jp:"いそがしい",r:"いそがしい",en:"busy",l:"L8"},{jp:"桜",r:"さくら",en:"cherry (blossom)",l:"L8"},{jp:"山",r:"やま",en:"mountain",l:"L8"},{jp:"町",r:"まち",en:"town, city",l:"L8"},{jp:"食べ物",r:"たべもの",en:"food",l:"L8"},{jp:"所",r:"ところ",en:"place",l:"L8"},{jp:"寮",r:"りょう",en:"dormitory",l:"L8"},{jp:"レストラン",r:"",en:"restaurant",l:"L8"},{jp:"生活",r:"せいかつ",en:"life",l:"L8"},{jp:"仕事",r:"しごと",en:"work, business, job",l:"L8"},{jp:"どう",r:"どう",en:"how",l:"L8"},{jp:"どんな〜",r:"どんな",en:"what kind of ~",l:"L8"},{jp:"とても",r:"とても",en:"very",l:"L8"},{jp:"あまり",r:"あまり",en:"not so (used with negatives)",l:"L8"},{jp:"そして",r:"そして",en:"and (connects sentences)",l:"L8"},{jp:"〜が",r:"が",en:"~, but ~",l:"L8"},
+// L9 additional
+{jp:"飲み物",r:"のみもの",en:"drinks",l:"L9"},{jp:"ダンス",r:"",en:"dance",l:"L9"},{jp:"旅行",r:"りょこう",en:"trip, tour",l:"L9"},{jp:"クラシック",r:"",en:"classical music",l:"L9"},{jp:"ジャズ",r:"",en:"jazz",l:"L9"},{jp:"コンサート",r:"",en:"concert",l:"L9"},{jp:"歌舞伎",r:"かぶき",en:"Kabuki (traditional Japanese drama)",l:"L9"},{jp:"絵",r:"え",en:"picture, drawing",l:"L9"},{jp:"字",r:"じ",en:"letter, character",l:"L9"},{jp:"ローマ字",r:"ろーまじ",en:"the Roman alphabet",l:"L9"},{jp:"細かいお金",r:"こまかいおかね",en:"small change",l:"L9"},{jp:"チケット",r:"",en:"ticket",l:"L9"},{jp:"時間",r:"じかん",en:"time",l:"L9"},{jp:"用事",r:"ようじ",en:"something to do, errand",l:"L9"},{jp:"約束",r:"やくそく",en:"appointment, promise",l:"L9"},{jp:"ご主人",r:"ごしゅじん",en:"(someone else's) husband",l:"L9"},{jp:"主人",r:"しゅじん",en:"(my) husband",l:"L9"},{jp:"奥さん",r:"おくさん",en:"(someone else's) wife",l:"L9"},{jp:"妻",r:"つま",en:"(my) wife",l:"L9"},{jp:"子ども",r:"こども",en:"child",l:"L9"},{jp:"よく",r:"よく",en:"well, much",l:"L9"},{jp:"だいたい",r:"だいたい",en:"mostly, roughly",l:"L9"},{jp:"全然",r:"ぜんぜん",en:"not at all (used with negatives)",l:"L9"},{jp:"早く",r:"はやく",en:"early, quickly, fast",l:"L9"},{jp:"どうして",r:"どうして",en:"why",l:"L9"},{jp:"残念です",r:"ざんねんです",en:"I'm sorry, unfortunately",l:"L9"},
+// L10 additional
+{jp:"いろいろ",r:"いろいろ",en:"various",l:"L10"},{jp:"男の人",r:"おとこのひと",en:"man",l:"L10"},{jp:"女の人",r:"おんなのひと",en:"woman",l:"L10"},{jp:"男の子",r:"おとこのこ",en:"boy",l:"L10"},{jp:"女の子",r:"おんなのこ",en:"girl",l:"L10"},{jp:"パンダ",r:"",en:"panda",l:"L10"},{jp:"象",r:"ぞう",en:"elephant",l:"L10"},{jp:"木",r:"き",en:"tree, wood",l:"L10"},{jp:"物",r:"もの",en:"thing",l:"L10"},{jp:"電池",r:"でんち",en:"battery",l:"L10"},{jp:"箱",r:"はこ",en:"box",l:"L10"},{jp:"スイッチ",r:"",en:"switch",l:"L10"},{jp:"棚",r:"たな",en:"shelf",l:"L10"},{jp:"ドア",r:"",en:"door",l:"L10"},{jp:"ポスト",r:"",en:"postbox, mailbox",l:"L10"},{jp:"ビル",r:"",en:"building",l:"L10"},{jp:"ATM",r:"",en:"cash machine, ATM",l:"L10"},{jp:"コンビニ",r:"",en:"convenience store",l:"L10"},{jp:"喫茶店",r:"きっさてん",en:"cafe, coffee shop",l:"L10"},{jp:"〜屋",r:"や",en:"~ shop, ~ store",l:"L10"},{jp:"乗り場",r:"のりば",en:"a fixed place to catch taxis, trains",l:"L10"},{jp:"県",r:"けん",en:"prefecture",l:"L10"},{jp:"上",r:"うえ",en:"on, above, over",l:"L10"},{jp:"下",r:"した",en:"under, below, beneath",l:"L10"},{jp:"前",r:"まえ",en:"front, before",l:"L10"},{jp:"後ろ",r:"うしろ",en:"back, behind",l:"L10"},{jp:"右",r:"みぎ",en:"right (side)",l:"L10"},{jp:"左",r:"ひだり",en:"left (side)",l:"L10"},{jp:"中",r:"なか",en:"in, inside",l:"L10"},{jp:"外",r:"そと",en:"outside",l:"L10"},{jp:"隣",r:"となり",en:"next, next door",l:"L10"},{jp:"近く",r:"ちかく",en:"near, vicinity",l:"L10"},{jp:"間",r:"あいだ",en:"between, among",l:"L10"},{jp:"〜や〜",r:"や",en:"~, ~, and so on",l:"L10"},
+// L11 additional
+{jp:"いくつ",r:"いくつ",en:"how many",l:"L11"},{jp:"〜人",r:"にん",en:"~ people (counter)",l:"L11"},{jp:"〜台",r:"だい",en:"counter for machines, cars",l:"L11"},{jp:"〜枚",r:"まい",en:"counter for paper, stamps",l:"L11"},{jp:"〜回",r:"かい",en:"~ times",l:"L11"},{jp:"カレー",r:"",en:"curry (with rice)",l:"L11"},{jp:"アイスクリーム",r:"",en:"ice cream",l:"L11"},{jp:"お兄さん",r:"おにいさん",en:"(someone else's) elder brother",l:"L11"},{jp:"お姉さん",r:"おねえさん",en:"(someone else's) elder sister",l:"L11"},{jp:"弟さん",r:"おとうとさん",en:"(someone else's) younger brother",l:"L11"},{jp:"妹さん",r:"いもうとさん",en:"(someone else's) younger sister",l:"L11"},{jp:"留学生",r:"りゅうがくせい",en:"foreign student",l:"L11"},{jp:"クラス",r:"",en:"class",l:"L11"},{jp:"〜時間",r:"じかん",en:"~ hour(s)",l:"L11"},{jp:"〜週間",r:"しゅうかん",en:"~ week(s)",l:"L11"},{jp:"〜か月",r:"かげつ",en:"~ month(s)",l:"L11"},{jp:"〜年",r:"ねん",en:"~ year(s)",l:"L11"},{jp:"〜ぐらい",r:"ぐらい",en:"about ~",l:"L11"},{jp:"どのくらい",r:"どのくらい",en:"how long",l:"L11"},{jp:"全部で",r:"ぜんぶで",en:"in total",l:"L11"},{jp:"みんな",r:"みんな",en:"all, everything, everyone",l:"L11"},{jp:"〜だけ",r:"だけ",en:"only ~",l:"L11"},{jp:"船便",r:"ふなびん",en:"sea mail",l:"L11"},{jp:"航空便",r:"こうくうびん",en:"airmail",l:"L11"},
+// L12 additional
+{jp:"重い",r:"おもい",en:"heavy",l:"L12"},{jp:"軽い",r:"かるい",en:"light",l:"L12"},{jp:"曇り",r:"くもり",en:"cloudy",l:"L12"},{jp:"ホテル",r:"",en:"hotel",l:"L12"},{jp:"空港",r:"くうこう",en:"airport",l:"L12"},{jp:"世界",r:"せかい",en:"world",l:"L12"},{jp:"お祭り",r:"おまつり",en:"festival",l:"L12"},{jp:"季節",r:"きせつ",en:"season",l:"L12"},{jp:"いちばん",r:"いちばん",en:"the most",l:"L12"},{jp:"初めて",r:"はじめて",en:"for the first time",l:"L12"},{jp:"刺身",r:"さしみ",en:"sashimi (sliced raw fish)",l:"L12"},{jp:"寿司",r:"すし",en:"sushi",l:"L12"},{jp:"天ぷら",r:"てんぷら",en:"tempura",l:"L12"},{jp:"豚肉",r:"ぶたにく",en:"pork",l:"L12"},{jp:"とり肉",r:"とりにく",en:"chicken",l:"L12"},{jp:"牛肉",r:"ぎゅうにく",en:"beef",l:"L12"},{jp:"レモン",r:"",en:"lemon",l:"L12"},{jp:"生け花",r:"いけばな",en:"flower arrangement",l:"L12"},{jp:"紅葉",r:"もみじ",en:"maple, red leaves of autumn",l:"L12"},{jp:"どちらも",r:"どちらも",en:"both",l:"L12"},{jp:"ただいま",r:"ただいま",en:"I'm home.",l:"L12"},{jp:"お帰りなさい",r:"おかえりなさい",en:"Welcome home.",l:"L12"},
+// L13 additional
+{jp:"迎えます",r:"むかえます",en:"go to meet, welcome",l:"L13"},{jp:"大変",r:"たいへん",en:"hard, tough, severe, awful",l:"L13"},{jp:"美術",r:"びじゅつ",en:"fine arts",l:"L13"},{jp:"釣り",r:"つり",en:"fishing",l:"L13"},{jp:"お正月",r:"おしょうがつ",en:"New Year's Day",l:"L13"},{jp:"〜ごろ",r:"ごろ",en:"about ~ (time)",l:"L13"},{jp:"どこか",r:"どこか",en:"somewhere, some place",l:"L13"},{jp:"のどがかわきます",r:"のどがかわきます",en:"get thirsty",l:"L13"},{jp:"おなかがすきます",r:"おなかがすきます",en:"get hungry",l:"L13"},{jp:"そうしましょう",r:"そうしましょう",en:"Let's do that.",l:"L13"},{jp:"ご注文",r:"ごちゅうもん",en:"May I take your order?",l:"L13"},{jp:"定食",r:"ていしょく",en:"set meal",l:"L13"},{jp:"牛どん",r:"ぎゅうどん",en:"bowl of rice topped with beef",l:"L13"},{jp:"別々に",r:"べつべつに",en:"separately",l:"L13"},
+// L14 additional
+{jp:"止めます",r:"とめます",en:"stop, park",l:"L14"},{jp:"持ちます",r:"もちます",en:"hold",l:"L14"},{jp:"取ります",r:"とります",en:"take, pass",l:"L14"},{jp:"手伝います",r:"てつだいます",en:"help (with a task)",l:"L14"},{jp:"呼びます",r:"よびます",en:"call",l:"L14"},{jp:"見せます",r:"みせます",en:"show",l:"L14"},{jp:"入ります",r:"はいります",en:"enter (a cafe)",l:"L14"},{jp:"降ります",r:"ふります",en:"rain",l:"L14"},{jp:"コピーします",r:"",en:"copy",l:"L14"},{jp:"エアコン",r:"",en:"air conditioner",l:"L14"},{jp:"パスポート",r:"",en:"passport",l:"L14"},{jp:"名前",r:"なまえ",en:"name",l:"L14"},{jp:"地図",r:"ちず",en:"map",l:"L14"},{jp:"電気",r:"でんき",en:"electricity, light",l:"L14"},{jp:"問題",r:"もんだい",en:"question, problem, trouble",l:"L14"},{jp:"答え",r:"こたえ",en:"answer",l:"L14"},{jp:"読み方",r:"よみかた",en:"how to read, way of reading",l:"L14"},{jp:"〜方",r:"かた",en:"how to ~, way of ~ing",l:"L14"},{jp:"まっすぐ",r:"まっすぐ",en:"straight",l:"L14"},{jp:"あとで",r:"あとで",en:"later",l:"L14"},{jp:"もう少し",r:"もうすこし",en:"a little more",l:"L14"},{jp:"〜もう",r:"もう",en:"~ more, another ~",l:"L14"},{jp:"お釣り",r:"おつり",en:"change (money)",l:"L14"},
+// L15 additional
+{jp:"置きます",r:"おきます",en:"put",l:"L15"},{jp:"研究します",r:"けんきゅうします",en:"do research",l:"L15"},{jp:"資料",r:"しりょう",en:"materials, data",l:"L15"},{jp:"カタログ",r:"",en:"catalogue",l:"L15"},{jp:"時刻表",r:"じこくひょう",en:"timetable",l:"L15"},{jp:"製品",r:"せいひん",en:"products",l:"L15"},{jp:"ソフト",r:"",en:"software",l:"L15"},{jp:"電子辞書",r:"でんしじしょ",en:"electronic dictionary",l:"L15"},{jp:"経済",r:"けいざい",en:"economy",l:"L15"},{jp:"市役所",r:"しやくしょ",en:"municipal office, city hall",l:"L15"},{jp:"高校",r:"こうこう",en:"senior high school",l:"L15"},{jp:"思い出します",r:"おもいだします",en:"remember, recollect",l:"L15"},
 // L16
 {jp:"乗ります",r:"のります",en:"ride, get on (a train)",l:"L16"},{jp:"折ります",r:"おります",en:"get off (a train)",l:"L16"},{jp:"乗り換えます",r:"のりかえます",en:"change (trains)",l:"L16"},{jp:"若い",r:"わかい",en:"young",l:"L16"},{jp:"長い",r:"ながい",en:"long",l:"L16"},{jp:"短い",r:"みじかい",en:"short",l:"L16"},{jp:"明るい",r:"あかるい",en:"bright, light",l:"L16"},{jp:"暗い",r:"くらい",en:"dark",l:"L16"},{jp:"体",r:"からだ",en:"body",l:"L16"},{jp:"頭",r:"あたま",en:"head",l:"L16"},{jp:"髪",r:"かみ",en:"hair",l:"L16"},{jp:"顔",r:"かお",en:"face",l:"L16"},{jp:"目",r:"め",en:"eye",l:"L16"},{jp:"耳",r:"みみ",en:"ear",l:"L16"},{jp:"口",r:"くち",en:"mouth",l:"L16"},{jp:"お腹",r:"おなか",en:"stomach",l:"L16"},{jp:"足",r:"あし",en:"leg, foot",l:"L16"},{jp:"緑",r:"みどり",en:"green, greenery",l:"L16"},
 // L17
@@ -463,6 +520,26 @@ const SEED=[
 {jp:"くれます",r:"くれます",en:"give (me)",l:"L24"},{jp:"連れて行きます",r:"つれていきます",en:"take (someone)",l:"L24"},{jp:"連れて来ます",r:"つれてきます",en:"bring (someone)",l:"L24"},{jp:"紹介します",r:"しょうかいします",en:"introduce",l:"L24"},{jp:"説明します",r:"せつめいします",en:"explain",l:"L24"},{jp:"お爺さん",r:"おじいさん",en:"grandfather, old man",l:"L24"},{jp:"お婆さん",r:"おばあさん",en:"grandmother, old woman",l:"L24"},{jp:"準備",r:"じゅんび",en:"preparation",l:"L24"},{jp:"意味",r:"いみ",en:"meaning",l:"L24"},{jp:"お菓子",r:"おかし",en:"sweets, snacks",l:"L24"},{jp:"自分で",r:"じぶんで",en:"by oneself",l:"L24"},
 // L25
 {jp:"考えます",r:"かんがえます",en:"think, consider",l:"L25"},{jp:"着きます",r:"つきます",en:"arrive (at the station)",l:"L25"},{jp:"留学します",r:"りゅうがくします",en:"study abroad",l:"L25"},{jp:"田舎",r:"いなか",en:"countryside, hometown",l:"L25"},{jp:"大使館",r:"たいしかん",en:"embassy",l:"L25"},{jp:"グループ",r:"",en:"group",l:"L25"},{jp:"チャンス",r:"",en:"chance",l:"L25"},
+// L16 additional
+{jp:"浴びます",r:"あびます",en:"take (a shower)",l:"L16"},{jp:"入れます",r:"いれます",en:"put in, insert",l:"L16"},{jp:"下ろします",r:"おろします",en:"withdraw (money)",l:"L16"},{jp:"見学します",r:"けんがくします",en:"tour, visit a place to study it",l:"L16"},{jp:"電話します",r:"でんわします",en:"phone",l:"L16"},{jp:"鼻",r:"はな",en:"nose",l:"L16"},{jp:"歯",r:"は",en:"tooth",l:"L16"},{jp:"背",r:"せ",en:"height",l:"L16"},{jp:"サービス",r:"",en:"service",l:"L16"},{jp:"ジョギング",r:"",en:"jogging",l:"L16"},{jp:"シャワー",r:"",en:"shower",l:"L16"},{jp:"お寺",r:"おてら",en:"Buddhist temple",l:"L16"},{jp:"神社",r:"じんじゃ",en:"Shinto shrine",l:"L16"},{jp:"〜番",r:"ばん",en:"number ~",l:"L16"},{jp:"どうやって",r:"どうやって",en:"in what way, how",l:"L16"},{jp:"どの〜",r:"どの",en:"which ~ (of three or more)",l:"L16"},{jp:"どれ",r:"どれ",en:"which one (of three or more)",l:"L16"},{jp:"まず",r:"まず",en:"first of all",l:"L16"},{jp:"次に",r:"つぎに",en:"next, as a next step",l:"L16"},{jp:"キャッシュカード",r:"",en:"cash dispensing card",l:"L16"},{jp:"暗証番号",r:"あんしょうばんごう",en:"personal identification number, PIN",l:"L16"},{jp:"金額",r:"きんがく",en:"amount of money",l:"L16"},{jp:"確認",r:"かくにん",en:"confirmation",l:"L16"},{jp:"ボタン",r:"",en:"button",l:"L16"},
+// L17 additional
+{jp:"なくします",r:"なくします",en:"lose",l:"L17"},{jp:"持って行きます",r:"もっていきます",en:"take (something)",l:"L17"},{jp:"持って来ます",r:"もってきます",en:"bring (something)",l:"L17"},{jp:"残業します",r:"ざんぎょうします",en:"work overtime",l:"L17"},{jp:"出張します",r:"しゅっちょうします",en:"go on a business trip",l:"L17"},{jp:"脱ぎます",r:"ぬぎます",en:"take off (clothes, shoes)",l:"L17"},{jp:"危ない",r:"あぶない",en:"dangerous",l:"L17"},{jp:"禁煙",r:"きんえん",en:"no smoking",l:"L17"},{jp:"健康保険証",r:"けんこうほけんしょう",en:"health insurance card",l:"L17"},{jp:"上着",r:"うわぎ",en:"jacket, outerwear",l:"L17"},{jp:"下着",r:"したぎ",en:"underwear",l:"L17"},{jp:"〜までに",r:"までに",en:"before ~, by ~ (time limit)",l:"L17"},{jp:"ですから",r:"ですから",en:"therefore, so",l:"L17"},{jp:"のど",r:"のど",en:"throat",l:"L17"},{jp:"お大事に",r:"おだいじに",en:"Take care of yourself. (said to ill people)",l:"L17"},
+// L18 additional
+{jp:"集めます",r:"あつめます",en:"collect, gather",l:"L18"},{jp:"捨てます",r:"すてます",en:"throw away",l:"L18"},{jp:"換えます",r:"かえます",en:"exchange, change",l:"L18"},{jp:"〜メートル",r:"めーとる",en:"~ meter",l:"L18"},{jp:"現金",r:"げんきん",en:"cash",l:"L18"},{jp:"日記",r:"にっき",en:"diary",l:"L18"},{jp:"お祈り",r:"おいのり",en:"prayer",l:"L18"},{jp:"部長",r:"ぶちょう",en:"department head",l:"L18"},{jp:"動物",r:"どうぶつ",en:"animal",l:"L18"},{jp:"馬",r:"うま",en:"horse",l:"L18"},{jp:"インターネット",r:"",en:"the Internet",l:"L18"},{jp:"特に",r:"とくに",en:"especially",l:"L18"},{jp:"なかなか",r:"なかなか",en:"not easily (used with negatives)",l:"L18"},{jp:"ぜひ",r:"ぜひ",en:"by all means, really",l:"L18"},{jp:"故郷",r:"ふるさと",en:"hometown",l:"L18"},
+// L19 additional
+{jp:"練習",r:"れんしゅう",en:"practice",l:"L19"},{jp:"日",r:"ひ",en:"day, date",l:"L19"},{jp:"調子",r:"ちょうし",en:"condition",l:"L19"},{jp:"一度も",r:"いちども",en:"not once, never (used with negatives)",l:"L19"},{jp:"おかげさまで",r:"おかげさまで",en:"Thank you. (used when expressing gratitude)",l:"L19"},{jp:"でも",r:"でも",en:"but",l:"L19"},{jp:"乾杯",r:"かんぱい",en:"Bottoms up!/Cheers!",l:"L19"},{jp:"ダイエット",r:"",en:"diet",l:"L19"},{jp:"無理",r:"むり",en:"excessive, impossible",l:"L19"},{jp:"体にいい",r:"からだにいい",en:"good for one's health",l:"L19"},
+// L20 additional
+{jp:"要ります",r:"いります",en:"need, require",l:"L20"},{jp:"修理します",r:"しゅうりします",en:"repair",l:"L20"},{jp:"〜くん",r:"くん",en:"Mr. (informal, for boys' names)",l:"L20"},{jp:"うん",r:"うん",en:"yes (informal)",l:"L20"},{jp:"ううん",r:"ううん",en:"no (informal)",l:"L20"},{jp:"こっち",r:"こっち",en:"this way (informal of こちら)",l:"L20"},{jp:"そっち",r:"そっち",en:"that way (informal of そちら)",l:"L20"},{jp:"あっち",r:"あっち",en:"that way over there (informal of あちら)",l:"L20"},{jp:"どっち",r:"どっち",en:"which way (informal of どちら)",l:"L20"},{jp:"みんなで",r:"みんなで",en:"all together",l:"L20"},{jp:"〜けど",r:"けど",en:"~, but (informal)",l:"L20"},{jp:"おなかがいっぱいです",r:"おなかがいっぱいです",en:"(I'm) full",l:"L20"},
+// L21 additional
+{jp:"役に立ちます",r:"やくにたちます",en:"be useful",l:"L21"},{jp:"動きます",r:"うごきます",en:"move, work",l:"L21"},{jp:"やめます",r:"やめます",en:"quit, retire from (a company), stop",l:"L21"},{jp:"気をつけます",r:"きをつけます",en:"pay attention, take care",l:"L21"},{jp:"不便",r:"ふべん",en:"inconvenient",l:"L21"},{jp:"交通",r:"こうつう",en:"transport, traffic",l:"L21"},{jp:"物価",r:"ぶっか",en:"(commodity) prices",l:"L21"},{jp:"放送",r:"ほうそう",en:"announcement, broadcast",l:"L21"},{jp:"アニメ",r:"",en:"anime (Japanese animated film)",l:"L21"},{jp:"マンガ",r:"",en:"comic book",l:"L21"},{jp:"デザイン",r:"",en:"design, artwork",l:"L21"},{jp:"夢",r:"ゆめ",en:"dream",l:"L21"},{jp:"天才",r:"てんさい",en:"genius",l:"L21"},{jp:"話",r:"はなし",en:"talk, speech, story",l:"L21"},{jp:"〜について",r:"について",en:"about ~, concerning ~",l:"L21"},{jp:"さっき",r:"さっき",en:"recently, these days",l:"L21"},{jp:"たぶん",r:"たぶん",en:"probably, perhaps, maybe",l:"L21"},{jp:"ほんとうに",r:"ほんとうに",en:"really",l:"L21"},{jp:"そんなに",r:"そんなに",en:"not so (used with negatives)",l:"L21"},{jp:"久しぶりですね",r:"ひさしぶりですね",en:"It's been a long time since we last met.",l:"L21"},
+// L22 additional
+{jp:"ケーキ",r:"",en:"cake",l:"L22"},{jp:"お弁当",r:"おべんとう",en:"box lunch",l:"L22"},{jp:"ロボット",r:"",en:"robot",l:"L22"},{jp:"ユーモア",r:"",en:"humor",l:"L22"},{jp:"都合",r:"つごう",en:"convenience",l:"L22"},{jp:"えーと",r:"えーと",en:"well, let me see",l:"L22"},{jp:"お探しですか",r:"おさがしですか",en:"Are you looking for ~?",l:"L22"},{jp:"家賃",r:"やちん",en:"rent",l:"L22"},{jp:"ダイニングキッチン",r:"",en:"kitchen with a dining area",l:"L22"},{jp:"和室",r:"わしつ",en:"Japanese-style room",l:"L22"},{jp:"押し入れ",r:"おしいれ",en:"Japanese-style closet",l:"L22"},{jp:"布団",r:"ふとん",en:"Japanese-style mattress and quilt",l:"L22"},
+// L23 additional
+{jp:"触ります",r:"さわります",en:"touch",l:"L23"},{jp:"引っ越しします",r:"ひっこしします",en:"move (house)",l:"L23"},
+// L24 additional
+{jp:"案内します",r:"あんないします",en:"show around, show the way",l:"L24"},{jp:"おじいちゃん",r:"おじいちゃん",en:"grandfather (casual)",l:"L24"},{jp:"おばあちゃん",r:"おばあちゃん",en:"grandmother (casual)",l:"L24"},{jp:"引っ越し",r:"ひっこし",en:"moving out",l:"L24"},{jp:"全部",r:"ぜんぶ",en:"all",l:"L24"},{jp:"ホームステイ",r:"",en:"homestay",l:"L24"},{jp:"ほかに",r:"ほかに",en:"besides",l:"L24"},{jp:"母の日",r:"ははのひ",en:"Mother's Day",l:"L24"},
+// L25 additional
+{jp:"足ります",r:"たります",en:"be enough, be sufficient",l:"L25"},{jp:"億",r:"おく",en:"hundred million",l:"L25"},{jp:"もし",r:"もし",en:"if",l:"L25"},{jp:"こと",r:"こと",en:"thing, matter",l:"L25"},{jp:"暇",r:"ひま",en:"free time",l:"L25"},{jp:"転勤",r:"てんきん",en:"transfer (to another office)",l:"L25"},{jp:"頑張ります",r:"がんばります",en:"do one's best",l:"L25"},{jp:"もしもし",r:"もしもし",en:"hello (used on the phone)",l:"L25"},
 // L26
 {jp:"診ます",r:"みます",en:"check, examine",l:"L26"},{jp:"探します",r:"さがします",en:"look for, search",l:"L26"},{jp:"遅れます",r:"おくれます",en:"be late (for appointment)",l:"L26"},{jp:"やります",r:"やります",en:"do",l:"L26"},{jp:"参加します",r:"さんかします",en:"attend, participate",l:"L26"},{jp:"申し込みます",r:"もうしこみます",en:"apply for, enter for",l:"L26"},{jp:"柔道",r:"じゅうどう",en:"judo",l:"L26"},{jp:"運動会",r:"うんどうかい",en:"athletic meeting",l:"L26"},{jp:"ボランティア",r:"",en:"volunteer",l:"L26"},{jp:"今度",r:"こんど",en:"next time, another time",l:"L26"},{jp:"いつでも",r:"いつでも",en:"any time",l:"L26"},{jp:"どこでも",r:"どこでも",en:"anywhere",l:"L26"},{jp:"誰でも",r:"だれでも",en:"anybody",l:"L26"},{jp:"何でも",r:"なんでも",en:"anything",l:"L26"},
 // L27
@@ -473,6 +550,16 @@ const SEED=[
 {jp:"開きます",r:"あきます",en:"(a door) open",l:"L29"},{jp:"閉まります",r:"しまります",en:"(a door) close",l:"L29"},{jp:"壊れます",r:"こわれます",en:"(a chair) break",l:"L29"},{jp:"割れます",r:"われます",en:"(a glass) break, smash",l:"L29"},{jp:"折れます",r:"おれます",en:"(a tree) break, snap",l:"L29"},{jp:"破れます",r:"やぶれます",en:"(paper) tear",l:"L29"},{jp:"お皿",r:"おさら",en:"plate, dish",l:"L29"},{jp:"お茶碗",r:"おちゃわん",en:"rice bowl",l:"L29"},{jp:"ガラス",r:"",en:"glass (material)",l:"L29"},{jp:"袋",r:"ふくろ",en:"bag",l:"L29"},{jp:"財布",r:"さいふ",en:"wallet, purse",l:"L29"},
 // L30
 {jp:"飾ります",r:"かざります",en:"display, decorate",l:"L30"},{jp:"並べます",r:"ならべます",en:"arrange, line up",l:"L30"},{jp:"片づけます",r:"かたづけます",en:"put things in order, tidy up",l:"L30"},{jp:"決めます",r:"きめます",en:"decide",l:"L30"},{jp:"相談します",r:"そうだんします",en:"consult, discuss",l:"L30"},{jp:"授業",r:"じゅぎょう",en:"class",l:"L30"},{jp:"予定",r:"よてい",en:"plan, schedule",l:"L30"},{jp:"カレンダー",r:"",en:"calendar",l:"L30"},{jp:"ポスター",r:"",en:"poster",l:"L30"},{jp:"人形",r:"にんぎょう",en:"doll",l:"L30"},{jp:"花瓶",r:"かびん",en:"vase",l:"L30"},{jp:"鏡",r:"かがみ",en:"mirror",l:"L30"},{jp:"玄関",r:"げんかん",en:"front door, entrance hall",l:"L30"},{jp:"廊下",r:"ろうか",en:"corridor, hallway",l:"L30"},{jp:"壁",r:"かべ",en:"wall",l:"L30"},
+// L26 additional
+{jp:"間に合います",r:"まにあいます",en:"be in time (for an appointment)",l:"L26"},{jp:"拾います",r:"ひろいます",en:"pick up",l:"L26"},{jp:"連絡します",r:"れんらくします",en:"contact, get in touch with",l:"L26"},{jp:"気分がいい",r:"きぶんがいい",en:"feel well",l:"L26"},{jp:"気分が悪い",r:"きぶんがわるい",en:"feel ill",l:"L26"},{jp:"盆踊り",r:"ぼんおどり",en:"Bon Festival dance",l:"L26"},{jp:"フリーマーケット",r:"",en:"flea market",l:"L26"},{jp:"場所",r:"ばしょ",en:"place",l:"L26"},{jp:"ごみ",r:"ごみ",en:"garbage, rubbish, dust",l:"L26"},{jp:"国会議事堂",r:"こっかいぎじどう",en:"the Diet Building",l:"L26"},{jp:"平日",r:"へいじつ",en:"weekday",l:"L26"},{jp:"〜弁",r:"べん",en:"dialect",l:"L26"},{jp:"ずいぶん",r:"ずいぶん",en:"very, pretty",l:"L26"},{jp:"直接",r:"ちょくせつ",en:"directly",l:"L26"},{jp:"こんな〜",r:"こんな",en:"like this",l:"L26"},{jp:"そんな〜",r:"そんな",en:"like that (near the listener)",l:"L26"},{jp:"あんな〜",r:"あんな",en:"like that (far from both)",l:"L26"},{jp:"片づきます",r:"かたづきます",en:"be put in order, tidy up",l:"L26"},{jp:"出します",r:"だします",en:"put out (the rubbish)",l:"L26"},{jp:"燃えるごみ",r:"もえるごみ",en:"burnable rubbish",l:"L26"},{jp:"置き場",r:"おきば",en:"place where something is put",l:"L26"},{jp:"横",r:"よこ",en:"side",l:"L26"},{jp:"瓶",r:"びん",en:"bottle",l:"L26"},{jp:"缶",r:"かん",en:"can",l:"L26"},{jp:"ガス",r:"",en:"gas",l:"L26"},{jp:"〜会社",r:"かいしゃ",en:"~ company",l:"L26"},{jp:"宇宙",r:"うちゅう",en:"space, universe",l:"L26"},{jp:"〜様",r:"さま",en:"Mr./Ms. (respectful)",l:"L26"},{jp:"宇宙船",r:"うちゅうせん",en:"spaceship",l:"L26"},{jp:"宇宙ステーション",r:"",en:"space station",l:"L26"},{jp:"違います",r:"ちがいます",en:"be different",l:"L26"},{jp:"宇宙飛行士",r:"うちゅうひこうし",en:"astronaut",l:"L26"},
+// L27 additional
+{jp:"波",r:"なみ",en:"wave",l:"L27"},{jp:"道具",r:"どうぐ",en:"tool, instrument, equipment",l:"L27"},{jp:"クリーニング",r:"",en:"(dry) cleaning, laundry",l:"L27"},{jp:"家",r:"いえ",en:"house, home",l:"L27"},{jp:"キッチン",r:"",en:"kitchen",l:"L27"},{jp:"〜教室",r:"きょうしつ",en:"~ class",l:"L27"},{jp:"パーティールーム",r:"",en:"party room",l:"L27"},{jp:"方",r:"かた",en:"person (respectful equivalent of ひと)",l:"L27"},{jp:"〜後",r:"ご",en:"after ~ (duration of time)",l:"L27"},{jp:"〜しか",r:"しか",en:"only ~ (used with negatives)",l:"L27"},{jp:"ほかの",r:"ほかの",en:"other",l:"L27"},{jp:"はっきり",r:"はっきり",en:"clearly",l:"L27"},{jp:"本棚",r:"ほんだな",en:"bookcase",l:"L27"},{jp:"いつか",r:"いつか",en:"one day, some day",l:"L27"},{jp:"すばらしい",r:"すばらしい",en:"wonderful",l:"L27"},{jp:"子どもたち",r:"こどもたち",en:"children",l:"L27"},{jp:"大好き",r:"だいすき",en:"like very much",l:"L27"},{jp:"主人公",r:"しゅじんこう",en:"hero, heroine",l:"L27"},{jp:"不思議",r:"ふしぎ",en:"fantastic, mysterious",l:"L27"},{jp:"ポケット",r:"",en:"pocket",l:"L27"},{jp:"例えば",r:"たとえば",en:"for example",l:"L27"},{jp:"飛びます",r:"とびます",en:"fly",l:"L27"},{jp:"自分",r:"じぶん",en:"oneself",l:"L27"},{jp:"将来",r:"しょうらい",en:"future",l:"L27"},
+// L28 additional
+{jp:"売れます",r:"うれます",en:"sell, be sold",l:"L28"},{jp:"噛みます",r:"かみます",en:"chew, bite",l:"L28"},{jp:"通います",r:"かよいます",en:"go to and from (university)",l:"L28"},{jp:"メモします",r:"",en:"take a memo",l:"L28"},{jp:"熱心",r:"ねっしん",en:"earnest",l:"L28"},{jp:"ちょうどいい",r:"ちょうどいい",en:"proper, just right",l:"L28"},{jp:"美容院",r:"びよういん",en:"hair salon",l:"L28"},{jp:"力",r:"ちから",en:"power",l:"L28"},{jp:"ガム",r:"",en:"chewing gum",l:"L28"},{jp:"品物",r:"しなもの",en:"goods",l:"L28"},{jp:"ボーナス",r:"",en:"bonus",l:"L28"},{jp:"ゲーム",r:"",en:"(computer) game",l:"L28"},{jp:"番組",r:"ばんぐみ",en:"programme",l:"L28"},{jp:"歌手",r:"かしゅ",en:"singer",l:"L28"},{jp:"小説家",r:"しょうせつか",en:"novelist",l:"L28"},{jp:"〜家",r:"か",en:"-er, -ist (e.g. painter, novelist)",l:"L28"},{jp:"〜機",r:"き",en:"~ machine",l:"L28"},{jp:"息子",r:"むすこ",en:"(my) son",l:"L28"},{jp:"息子さん",r:"むすこさん",en:"(someone else's) son",l:"L28"},{jp:"娘",r:"むすめ",en:"(my) daughter",l:"L28"},{jp:"娘さん",r:"むすめさん",en:"(someone else's) daughter",l:"L28"},{jp:"しばらく",r:"しばらく",en:"a little while",l:"L28"},{jp:"たいてい",r:"たいてい",en:"usually, mostly",l:"L28"},{jp:"それに",r:"それに",en:"in addition",l:"L28"},{jp:"それで",r:"それで",en:"and so",l:"L28"},{jp:"実は",r:"じつは",en:"as a matter of fact",l:"L28"},{jp:"会話",r:"かいわ",en:"conversation",l:"L28"},{jp:"うーん",r:"うーん",en:"well, let me see, hmm",l:"L28"},{jp:"お知らせ",r:"おしらせ",en:"notice",l:"L28"},{jp:"日にち",r:"ひにち",en:"date",l:"L28"},{jp:"体育館",r:"たいいくかん",en:"gymnasium",l:"L28"},{jp:"イベント",r:"",en:"event",l:"L28"},
+// L29 additional
+{jp:"消えます",r:"きえます",en:"(a light) go off",l:"L29"},{jp:"汚れます",r:"よごれます",en:"(clothes) get dirty",l:"L29"},{jp:"付きます",r:"つきます",en:"(a pocket) be attached",l:"L29"},{jp:"外れます",r:"はずれます",en:"(a button) be undone",l:"L29"},{jp:"止まります",r:"とまります",en:"(a car) stop, park",l:"L29"},{jp:"間違えます",r:"まちがえます",en:"make a mistake",l:"L29"},{jp:"落とします",r:"おとします",en:"drop, lose",l:"L29"},{jp:"掛かります",r:"かかります",en:"be locked",l:"L29"},{jp:"拭きます",r:"ふきます",en:"wipe",l:"L29"},{jp:"取り替えます",r:"とりかえます",en:"change",l:"L29"},{jp:"コップ",r:"",en:"glass (vessel)",l:"L29"},{jp:"枝",r:"えだ",en:"branch, twig",l:"L29"},{jp:"駅員",r:"えきいん",en:"station attendant",l:"L29"},{jp:"交番",r:"こうばん",en:"police box",l:"L29"},{jp:"スピーチ",r:"",en:"speech",l:"L29"},{jp:"返事",r:"へんじ",en:"reply, answer",l:"L29"},{jp:"お先にどうぞ",r:"おさきにどうぞ",en:"After you./Go ahead, please.",l:"L29"},{jp:"忘れ物",r:"わすれもの",en:"things left behind, lost property",l:"L29"},{jp:"〜側",r:"がわ",en:"~ side",l:"L29"},{jp:"〜辺",r:"へん",en:"around ~, about ~",l:"L29"},{jp:"網棚",r:"あみだな",en:"overhead rack",l:"L29"},{jp:"確か",r:"たしか",en:"I'm pretty sure",l:"L29"},{jp:"針",r:"はり",en:"hands (of a clock), point",l:"L29"},{jp:"指します",r:"さします",en:"point",l:"L29"},{jp:"駅前",r:"えきまえ",en:"the area in front of a station",l:"L29"},{jp:"倒れます",r:"たおれます",en:"fall down",l:"L29"},{jp:"西",r:"にし",en:"west",l:"L29"},{jp:"〜の方",r:"ほう",en:"direction of ~",l:"L29"},{jp:"燃えます",r:"もえます",en:"burn",l:"L29"},{jp:"レポーター",r:"",en:"reporter",l:"L29"},
+// L30 additional
+{jp:"掛けます",r:"かけます",en:"hang",l:"L30"},{jp:"植えます",r:"うえます",en:"plant",l:"L30"},{jp:"戻します",r:"もどします",en:"return, put ~ back",l:"L30"},{jp:"まとめます",r:"まとめます",en:"put ~ together, sum up",l:"L30"},{jp:"しまいます",r:"しまいます",en:"put (things) away",l:"L30"},{jp:"予習します",r:"よしゅうします",en:"prepare one's lesson",l:"L30"},{jp:"復習します",r:"ふくしゅうします",en:"review one's lesson",l:"L30"},{jp:"そのままにします",r:"そのままにします",en:"leave things as they are",l:"L30"},{jp:"講義",r:"こうぎ",en:"lecture",l:"L30"},{jp:"ミーティング",r:"",en:"meeting",l:"L30"},{jp:"ガイドブック",r:"",en:"guidebook",l:"L30"},{jp:"予定表",r:"よていひょう",en:"schedule",l:"L30"},{jp:"ごみ箱",r:"ごみばこ",en:"trash can, dustbin",l:"L30"},{jp:"引き出し",r:"ひきだし",en:"drawer",l:"L30"},{jp:"池",r:"いけ",en:"pond",l:"L30"},{jp:"元の所",r:"もとのところ",en:"original place",l:"L30"},{jp:"周り",r:"まわり",en:"round, around",l:"L30"},{jp:"真ん中",r:"まんなか",en:"centre",l:"L30"},{jp:"隅",r:"すみ",en:"corner",l:"L30"},{jp:"まだ",r:"まだ",en:"still",l:"L30"},{jp:"リュック",r:"",en:"rucksack",l:"L30"},{jp:"非常袋",r:"ひじょうぶくろ",en:"emergency kit",l:"L30"},{jp:"非常時",r:"ひじょうじ",en:"emergency",l:"L30"},{jp:"生活します",r:"せいかつします",en:"live",l:"L30"},{jp:"懐中電灯",r:"かいちゅうでんとう",en:"torch, flashlight",l:"L30"},{jp:"〜とか、〜とか",r:"",en:"~, ~, and so on",l:"L30"},{jp:"丸い",r:"まるい",en:"round",l:"L30"},{jp:"夢を見ます",r:"ゆめをみます",en:"dream",l:"L30"},{jp:"すると",r:"すると",en:"and, then",l:"L30"},{jp:"目が覚めます",r:"めがさめます",en:"wake up",l:"L30"},
 // L31
 {jp:"続けます",r:"つづけます",en:"continue",l:"L31"},{jp:"見つけます",r:"みつけます",en:"find",l:"L31"},{jp:"入学します",r:"にゅうがくします",en:"enter a university",l:"L31"},{jp:"卒業します",r:"そつぎょうします",en:"graduate from university",l:"L31"},{jp:"連休",r:"れんきゅう",en:"consecutive holidays",l:"L31"},{jp:"作文",r:"さくぶん",en:"essay, composition",l:"L31"},{jp:"展覧会",r:"てんらんかい",en:"exhibition",l:"L31"},{jp:"結婚式",r:"けっこんしき",en:"wedding ceremony",l:"L31"},{jp:"動物園",r:"どうぶつえん",en:"zoo",l:"L31"},{jp:"温泉",r:"おんせん",en:"hot spring, spa",l:"L31"},{jp:"お客",r:"おきゃく",en:"visitor, guest, customer",l:"L31"},
 // L32
@@ -515,7 +602,7 @@ const SEED=[
 {jp:"参ります",r:"まいります",en:"go, come (humble)",l:"L50"},{jp:"折ります",r:"おります",en:"be (humble equivalent of います)",l:"L50"},{jp:"申します",r:"もうします",en:"say (humble)",l:"L50"},{jp:"いたします",r:"いたします",en:"do (humble)",l:"L50"},{jp:"存じます",r:"ぞんじます",en:"know (humble)",l:"L50"},{jp:"私",r:"わたくし",en:"I (humble)",l:"L50"},{jp:"お宅",r:"おたく",en:"(someone else's) house",l:"L50"},{jp:"最初に",r:"さいしょに",en:"first of all",l:"L50"},{jp:"最後に",r:"さいごに",en:"lastly",l:"L50"},
 ];
 
-var KANJI_MAP = {"わたし": "私", "わたしたち": "私たち", "あのひと": "あの人", "せんせい": "先生", "がくせい": "学生", "かいしゃいん": "会社員", "ぎんこういん": "銀行員", "いしゃ": "医者", "けんきゅうしゃ": "研究者", "だいがく": "大学", "びょういん": "病院", "ほん": "本", "じしょ": "辞書", "ざっし": "雑誌", "しんぶん": "新聞", "てちょう": "手帳", "めいし": "名刺", "えんぴつ": "鉛筆", "かぎ": "鍵", "とけい": "時計", "かさ": "傘", "じどうしゃ": "自動車", "つくえ": "机", "いす": "椅子", "えいご": "英語", "にほんご": "日本語", "なん": "何", "きょうしつ": "教室", "しょくどう": "食堂", "じむしょ": "事務所", "かいぎしつ": "会議室", "へや": "部屋", "かいしゃ": "会社", "でんわ": "電話", "くつ": "靴", "おきます": "起きます", "ねます": "寝ます", "はたらきます": "働きます", "やすみます": "休みます", "べんきょうします": "勉強します", "おわります": "終わります", "ぎんこう": "銀行", "ゆうびんきょく": "郵便局", "としょかん": "図書館", "びじゅつかん": "美術館", "いま": "今", "はん": "半", "ごぜん": "午前", "ごご": "午後", "あさ": "朝", "ひる": "昼", "ばん": "晩", "きのう": "昨日", "きょう": "今日", "あした": "明日", "げつようび": "月曜日", "かようび": "火曜日", "すいようび": "水曜日", "もくようび": "木曜日", "きんようび": "金曜日", "どようび": "土曜日", "にちようび": "日曜日", "たんじょうび": "誕生日", "いきます": "行きます", "きます": "着ます", "かえります": "帰ります", "でんしゃ": "電車", "ひこうき": "飛行機", "ふね": "船", "しんかんせん": "新幹線", "ついたち": "一日", "ふつか": "二日", "みっか": "三日", "よっか": "四日", "いつか": "五日", "とおか": "十日", "はつか": "二十日", "たべます": "食べます", "のみます": "飲みます", "みます": "診ます", "ききます": "聞きます", "よみます": "読みます", "かきます": "書きます", "かいます": "買います", "あいます": "会います", "ごはん": "ご飯", "あさごはん": "朝ご飯", "ひるごはん": "昼ご飯", "ばんごはん": "晩ご飯", "たまご": "卵", "にく": "肉", "さかな": "魚", "やさい": "野菜", "くだもの": "果物", "みず": "水", "おちゃ": "お茶", "こうちゃ": "紅茶", "ぎゅうにゅう": "牛乳", "えいが": "映画", "いっしょに": "一緒に", "ときどき": "時々", "かします": "貸します", "かります": "借ります", "おしえます": "教えます", "ならいます": "習います", "はし": "橋", "はさみ": "ハサミ", "はな": "花", "おかね": "お金", "きって": "切手", "しずか": "静か", "ゆうめい": "有名", "しんせつ": "親切", "げんき": "元気", "べんり": "便利", "おおきい": "大きい", "ちいさい": "小さい", "あたらしい": "新しい", "ふるい": "古い", "わるい": "悪い", "あつい": "暑い", "さむい": "寒い", "むずかしい": "難しい", "やさしい": "易しい", "たかい": "高い", "やすい": "安い", "おもしろい": "面白い", "おいしい": "美味しい", "たのしい": "楽しい", "しろい": "白い", "くろい": "黒い", "あかい": "赤い", "あおい": "青い", "わかります": "分かります", "すき": "好き", "きらい": "嫌い", "じょうず": "上手", "へた": "下手", "りょうり": "料理", "やきゅう": "野球", "おんがく": "音楽", "うた": "歌", "かんじ": "漢字", "かたかな": "カタカナ", "すこし": "少し", "いぬ": "犬", "ねこ": "猫", "れいぞうこ": "冷蔵庫", "まど": "窓", "こうえん": "公園", "ほんや": "本屋", "ひとつ": "一つ", "ふたつ": "二つ", "みっつ": "三つ", "よっつ": "四つ", "いつつ": "五つ", "むっつ": "六つ", "ななつ": "七つ", "やっつ": "八つ", "ここのつ": "九つ", "とお": "十", "ひとり": "一人", "ふたり": "二人", "はがき": "葉書", "ふうとう": "封筒", "りょうしん": "両親", "きょうだい": "兄弟", "あに": "兄", "あね": "姉", "おとうと": "弟", "いもうと": "妹", "がいこく": "外国", "かんたん": "簡単", "ちかい": "近い", "とおい": "遠い", "はやい": "速い", "おそい": "遅い", "おおい": "多い", "すくない": "少ない", "あたたかい": "暖かい", "すずしい": "涼しい", "あまい": "甘い", "からい": "辛い", "はる": "春", "なつ": "夏", "あき": "秋", "ふゆ": "冬", "てんき": "天気", "あめ": "雨", "ゆき": "雪", "うみ": "海", "しけん": "試験", "すきやき": "すき焼き", "あそびます": "遊びます", "およぎます": "泳ぎます", "つかれます": "疲れます", "けっこんします": "結婚します", "かいものします": "買い物します", "しょくじします": "食事します", "さんぽします": "散歩します", "ほしい": "欲しい", "さびしい": "寂しい", "ひろい": "広い", "せまい": "狭い", "かわ": "川", "しゅうまつ": "週末", "なにか": "何か", "つけます": "付けます", "けします": "消します", "あけます": "開けます", "しめます": "閉めます", "いそぎます": "急ぎます", "まちます": "待ちます", "まがります": "曲がります", "はなします": "話します", "はじめます": "始めます", "じゅうしょ": "住所", "しお": "塩", "さとう": "砂糖", "たちます": "立ちます", "すわります": "座ります", "つかいます": "使います", "つくります": "作ります", "うります": "売ります", "しります": "知ります", "しっています": "知っています", "すんでいます": "住んでいます", "ふく": "服", "はいしゃ": "歯医者", "どくしん": "独身", "のります": "乗ります", "おります": "折ります", "のりかえます": "乗り換えます", "わかい": "若い", "ながい": "長い", "みじかい": "短い", "あかるい": "明るい", "くらい": "暗い", "からだ": "体", "あたま": "頭", "かみ": "髪", "かお": "顔", "め": "目", "みみ": "耳", "くち": "口", "おなか": "お腹", "あし": "足", "みどり": "緑", "おぼえます": "覚えます", "わすれます": "忘れます", "はらいます": "払います", "かえします": "返します", "でかけます": "出かけます", "しんぱいします": "心配します", "たいせつ": "大切", "だいじょうぶ": "大丈夫", "かぜ": "風", "ねつ": "熱", "びょうき": "病気", "くすり": "薬", "おふろ": "お風呂", "できます": "出来ます", "あらいます": "洗います", "ひきます": "弾きます", "うたいます": "歌います", "うんてんします": "運転します", "よやくします": "予約します", "しゅみ": "趣味", "かちょう": "課長", "しゃちょう": "社長", "のぼります": "登ります", "とまります": "泊まります", "そうじします": "掃除します", "せんたくします": "洗濯します", "ねむい": "眠い", "つよい": "強い", "よわい": "弱い", "すもう": "相撲", "いちど": "一度", "だんだん": "段々", "しらべます": "調べます", "なおします": "直します", "ぼく": "僕", "きみ": "君", "ことば": "言葉", "きもの": "着物", "はじめ": "初め", "おわり": "終わり", "おもいます": "思います", "いいます": "言います", "かちます": "勝ちます", "まけます": "負けます", "むだ": "無駄", "おなじ": "同じ", "すごい": "凄い", "しゅしょう": "首相", "せいじ": "政治", "しあい": "試合", "いけん": "意見", "さいきん": "最近", "たぶん": "多分", "はきます": "履きます", "かぶります": "被ります", "うまれます": "生まれます", "ぼうし": "帽子", "めがね": "眼鏡", "まわします": "回します", "おします": "押します", "あるきます": "歩きます", "わたります": "渡ります", "みち": "道", "こうさてん": "交差点", "しんごう": "信号", "かど": "角", "おと": "音", "つれていきます": "連れて行きます", "つれてきます": "連れて来ます", "しょうかいします": "紹介します", "せつめいします": "説明します", "おじいさん": "お爺さん", "おばあさん": "お婆さん", "じゅんび": "準備", "いみ": "意味", "おかし": "お菓子", "じぶんで": "自分で", "かんがえます": "考えます", "つきます": "着きます", "りゅうがくします": "留学します", "いなか": "田舎", "たいしかん": "大使館", "さがします": "探します", "おくれます": "遅れます", "さんかします": "参加します", "もうしこみます": "申し込みます", "じゅうどう": "柔道", "うんどうかい": "運動会", "こんど": "今度", "だれでも": "誰でも", "なんでも": "何でも", "たてます": "建てます", "はしります": "走ります", "みえます": "見えます", "きこえます": "聞こえます", "ひらきます": "開きます", "とり": "鳥", "こえ": "声", "はなび": "花火", "けしき": "景色", "むかし": "昔", "だいどころ": "台所", "おどります": "踊ります", "えらびます": "選びます", "まじめ": "真面目", "えらい": "偉い", "しゅうかん": "習慣", "けいけん": "経験", "にんき": "人気", "かたち": "形", "いろ": "色", "あじ": "味", "ねだん": "値段", "きゅうりょう": "給料", "しょうせつ": "小説", "あきます": "開きます", "しまります": "閉まります", "こわれます": "壊れます", "われます": "割れます", "おれます": "折れます", "やぶれます": "破れます", "おさら": "お皿", "おちゃわん": "お茶碗", "ふくろ": "袋", "さいふ": "財布", "かざります": "飾ります", "ならべます": "並べます", "かたづけます": "片づけます", "きめます": "決めます", "そうだんします": "相談します", "じゅぎょう": "授業", "よてい": "予定", "にんぎょう": "人形", "かびん": "花瓶", "かがみ": "鏡", "げんかん": "玄関", "ろうか": "廊下", "かべ": "壁", "つづけます": "続けます", "みつけます": "見つけます", "にゅうがくします": "入学します", "そつぎょうします": "卒業します", "れんきゅう": "連休", "さくぶん": "作文", "てんらんかい": "展覧会", "けっこんしき": "結婚式", "どうぶつえん": "動物園", "おんせん": "温泉", "おきゃく": "お客", "うんどうします": "運動します", "せいこうします": "成功します", "しっぱいします": "失敗します", "なおります": "治ります", "はれます": "晴れます", "くもります": "曇ります", "しんぱい": "心配", "そら": "空", "たいよう": "太陽", "ほし": "星", "つき": "月", "にげます": "逃げます", "あきらめます": "諦めます", "なげます": "投げます", "まもります": "守ります", "つたえます": "伝えます", "だめ": "駄目", "せんたくき": "洗濯機", "きそく": "規則", "いりぐち": "入口", "でぐち": "出口", "むりょう": "無料", "みがきます": "磨きます", "ほそい": "細い", "ふとい": "太い", "かぐ": "家具", "せつめいしょ": "説明書", "くろ": "黒", "しろ": "白", "あか": "赤", "きいろ": "黄色", "ちゃいろ": "茶色", "さきます": "咲きます", "かわります": "変わります", "こまります": "困ります", "らく": "楽", "ただしい": "正しい", "むこう": "向こう", "しま": "島", "むら": "村", "みなと": "港", "やまのぼり": "山登り", "きかい": "機会", "ほうほう": "方法", "とどきます": "届きます", "ちょきんします": "貯金します", "やせます": "痩せます", "なれます": "慣れます", "かたい": "硬い", "やわらかい": "柔らかい", "こうじょう": "工場", "けんこう": "健康", "まいしゅう": "毎週", "まいつき": "毎月", "かならず": "必ず", "ほめます": "褒めます", "しかります": "叱ります", "さそいます": "誘います", "たのみます": "頼みます", "こわします": "壊します", "はつめいします": "発明します", "はっけんします": "発見します", "こめ": "米", "むぎ": "麦", "どろぼう": "泥棒", "まんが": "漫画", "せかいじゅう": "世界中", "そだてます": "育てます", "なくなります": "亡くなります", "にゅういんします": "入院します", "たいいんします": "退院します", "あかちゃん": "赤ちゃん", "しょうがっこう": "小学校", "ちゅうがっこう": "中学校", "かいがん": "海岸", "うそ": "嘘", "しょるい": "書類", "こたえます": "答えます", "あんしんします": "安心します", "ふくざつ": "複雑", "うれしい": "嬉しい", "かなしい": "悲しい", "はずかしい": "恥ずかしい", "じしん": "地震", "たいふう": "台風", "かじ": "火事", "じこ": "事故", "かぞえます": "数えます", "たしかめます": "確かめます", "しゅっぱつします": "出発します", "とうちゃくします": "到着します", "きけん": "危険", "ひつよう": "必要", "ちきゅう": "地球", "ながさ": "長さ", "おもさ": "重さ", "たかさ": "高さ", "ほんとう": "本当", "まちがい": "間違い", "いただきます": "頂きます", "くださいます": "下さいます", "かわいい": "可愛い", "おいわい": "お祝い", "きょうみ": "興味", "じょうほう": "情報", "ぶんぽう": "文法", "はつおん": "発音", "くつした": "靴下", "ゆびわ": "指輪", "つつみます": "包みます", "わかします": "沸かします", "まぜます": "混ぜます", "べんごし": "弁護士", "おんがくか": "音楽家", "きょういく": "教育", "れきし": "歴史", "ぶんか": "文化", "しゃかい": "社会", "ほうりつ": "法律", "せんそう": "戦争", "へいわ": "平和", "かんづめ": "缶詰", "ふえます": "増えます", "へります": "減ります", "あがります": "上がります", "さがります": "下がります", "じょうぶ": "丈夫", "しあわせ": "幸せ", "うまい": "上手い", "だんぼう": "暖房", "れいぼう": "冷房", "なきます": "泣きます", "わらいます": "笑います", "ぬれます": "濡れます", "すべります": "滑ります", "あんぜん": "安全", "ていねい": "丁寧", "くうき": "空気", "わしょく": "和食", "ようしょく": "洋食", "りゆう": "理由", "あやまります": "謝ります", "しんじます": "信じます", "ようします": "用意します", "ほしょうしょ": "保証書", "りょうしゅうしょ": "領収書", "おくりもの": "贈り物", "ちゅうし": "中止", "きゅうに": "急に", "やきます": "焼きます", "わたします": "渡します", "でます": "出ます", "るす": "留守", "たくはいびん": "宅配便", "げんいん": "原因", "しょくよく": "食欲", "ちょうど": "丁度", "あつまります": "集まります", "わかれます": "別れます", "ながいきします": "長生きします", "ひどい": "酷い", "こわい": "怖い", "てんきよほう": "天気予報", "じんこう": "人口", "かがく": "科学", "いがく": "医学", "さんせい": "賛成", "はんたい": "反対", "きゅうきゅうしゃ": "救急車", "おろします": "降ろします", "とどけます": "届けます", "いや": "嫌", "きびしい": "厳しい", "じゅく": "塾", "じゆうに": "自由に", "つとめます": "勤めます", "すごします": "過ごします", "めしあがります": "召し上がります", "あいさつ": "挨拶", "りょかん": "旅館", "ぼうえき": "貿易", "まいります": "参ります", "もうします": "申します", "ぞんじます": "存じます", "わたくし": "私", "おたく": "お宅", "さいしょに": "最初に", "さいごに": "最後に"};
+var KANJI_MAP = {"わたし": "私", "わたしたち": "私たち", "あのひと": "あの人", "せんせい": "先生", "がくせい": "学生", "かいしゃいん": "会社員", "ぎんこういん": "銀行員", "いしゃ": "医者", "けんきゅうしゃ": "研究者", "だいがく": "大学", "びょういん": "病院", "ほん": "本", "じしょ": "辞書", "ざっし": "雑誌", "しんぶん": "新聞", "てちょう": "手帳", "めいし": "名刺", "えんぴつ": "鉛筆", "かぎ": "鍵", "とけい": "時計", "かさ": "傘", "じどうしゃ": "自動車", "つくえ": "机", "いす": "椅子", "えいご": "英語", "にほんご": "日本語", "なん": "何", "きょうしつ": "教室", "しょくどう": "食堂", "じむしょ": "事務所", "かいぎしつ": "会議室", "へや": "部屋", "かいしゃ": "会社", "でんわ": "電話", "くつ": "靴", "おきます": "起きます", "ねます": "寝ます", "はたらきます": "働きます", "やすみます": "休みます", "べんきょうします": "勉強します", "おわります": "終わります", "ぎんこう": "銀行", "ゆうびんきょく": "郵便局", "としょかん": "図書館", "びじゅつかん": "美術館", "いま": "今", "はん": "半", "ごぜん": "午前", "ごご": "午後", "あさ": "朝", "ひる": "昼", "ばん": "晩", "きのう": "昨日", "きょう": "今日", "あした": "明日", "げつようび": "月曜日", "かようび": "火曜日", "すいようび": "水曜日", "もくようび": "木曜日", "きんようび": "金曜日", "どようび": "土曜日", "にちようび": "日曜日", "たんじょうび": "誕生日", "いきます": "行きます", "きます": "着ます", "かえります": "帰ります", "でんしゃ": "電車", "ひこうき": "飛行機", "ふね": "船", "しんかんせん": "新幹線", "ついたち": "一日", "ふつか": "二日", "みっか": "三日", "よっか": "四日", "いつか": "五日", "とおか": "十日", "はつか": "二十日", "たべます": "食べます", "のみます": "飲みます", "みます": "診ます", "ききます": "聞きます", "よみます": "読みます", "かきます": "書きます", "かいます": "買います", "あいます": "会います", "ごはん": "ご飯", "あさごはん": "朝ご飯", "ひるごはん": "昼ご飯", "ばんごはん": "晩ご飯", "たまご": "卵", "にく": "肉", "さかな": "魚", "やさい": "野菜", "くだもの": "果物", "みず": "水", "おちゃ": "お茶", "こうちゃ": "紅茶", "ぎゅうにゅう": "牛乳", "えいが": "映画", "いっしょに": "一緒に", "ときどき": "時々", "かします": "貸します", "かります": "借ります", "おしえます": "教えます", "ならいます": "習います", "はし": "橋", "はさみ": "ハサミ", "はな": "花", "おかね": "お金", "きって": "切手", "しずか": "静か", "ゆうめい": "有名", "しんせつ": "親切", "げんき": "元気", "べんり": "便利", "おおきい": "大きい", "ちいさい": "小さい", "あたらしい": "新しい", "ふるい": "古い", "わるい": "悪い", "あつい": "暑い", "さむい": "寒い", "むずかしい": "難しい", "やさしい": "易しい", "たかい": "高い", "やすい": "安い", "おもしろい": "面白い", "おいしい": "美味しい", "たのしい": "楽しい", "しろい": "白い", "くろい": "黒い", "あかい": "赤い", "あおい": "青い", "わかります": "分かります", "すき": "好き", "きらい": "嫌い", "じょうず": "上手", "へた": "下手", "りょうり": "料理", "やきゅう": "野球", "おんがく": "音楽", "うた": "歌", "かんじ": "漢字", "かたかな": "カタカナ", "すこし": "少し", "いぬ": "犬", "ねこ": "猫", "れいぞうこ": "冷蔵庫", "まど": "窓", "こうえん": "公園", "ほんや": "本屋", "ひとつ": "一つ", "ふたつ": "二つ", "みっつ": "三つ", "よっつ": "四つ", "いつつ": "五つ", "むっつ": "六つ", "ななつ": "七つ", "やっつ": "八つ", "ここのつ": "九つ", "とお": "十", "ひとり": "一人", "ふたり": "二人", "はがき": "葉書", "ふうとう": "封筒", "りょうしん": "両親", "きょうだい": "兄弟", "あに": "兄", "あね": "姉", "おとうと": "弟", "いもうと": "妹", "がいこく": "外国", "かんたん": "簡単", "ちかい": "近い", "とおい": "遠い", "はやい": "速い", "おそい": "遅い", "おおい": "多い", "すくない": "少ない", "あたたかい": "暖かい", "すずしい": "涼しい", "あまい": "甘い", "からい": "辛い", "はる": "春", "なつ": "夏", "あき": "秋", "ふゆ": "冬", "てんき": "天気", "あめ": "雨", "ゆき": "雪", "うみ": "海", "しけん": "試験", "すきやき": "すき焼き", "あそびます": "遊びます", "およぎます": "泳ぎます", "つかれます": "疲れます", "けっこんします": "結婚します", "かいものします": "買い物します", "しょくじします": "食事します", "さんぽします": "散歩します", "ほしい": "欲しい", "さびしい": "寂しい", "ひろい": "広い", "せまい": "狭い", "かわ": "川", "しゅうまつ": "週末", "なにか": "何か", "つけます": "付けます", "けします": "消します", "あけます": "開けます", "しめます": "閉めます", "いそぎます": "急ぎます", "まちます": "待ちます", "まがります": "曲がります", "はなします": "話します", "はじめます": "始めます", "じゅうしょ": "住所", "しお": "塩", "さとう": "砂糖", "たちます": "立ちます", "すわります": "座ります", "つかいます": "使います", "つくります": "作ります", "うります": "売ります", "しります": "知ります", "しっています": "知っています", "すんでいます": "住んでいます", "ふく": "服", "はいしゃ": "歯医者", "どくしん": "独身", "のります": "乗ります", "おります": "折ります", "のりかえます": "乗り換えます", "わかい": "若い", "ながい": "長い", "みじかい": "短い", "あかるい": "明るい", "くらい": "暗い", "からだ": "体", "あたま": "頭", "かみ": "髪", "かお": "顔", "め": "目", "みみ": "耳", "くち": "口", "おなか": "お腹", "あし": "足", "みどり": "緑", "おぼえます": "覚えます", "わすれます": "忘れます", "はらいます": "払います", "かえします": "返します", "でかけます": "出かけます", "しんぱいします": "心配します", "たいせつ": "大切", "だいじょうぶ": "大丈夫", "かぜ": "風", "ねつ": "熱", "びょうき": "病気", "くすり": "薬", "おふろ": "お風呂", "できます": "出来ます", "あらいます": "洗います", "ひきます": "弾きます", "うたいます": "歌います", "うんてんします": "運転します", "よやくします": "予約します", "しゅみ": "趣味", "かちょう": "課長", "しゃちょう": "社長", "のぼります": "登ります", "とまります": "泊まります", "そうじします": "掃除します", "せんたくします": "洗濯します", "ねむい": "眠い", "つよい": "強い", "よわい": "弱い", "すもう": "相撲", "いちど": "一度", "だんだん": "段々", "しらべます": "調べます", "なおします": "直します", "ぼく": "僕", "きみ": "君", "ことば": "言葉", "きもの": "着物", "はじめ": "初め", "おわり": "終わり", "おもいます": "思います", "いいます": "言います", "かちます": "勝ちます", "まけます": "負けます", "むだ": "無駄", "おなじ": "同じ", "すごい": "凄い", "しゅしょう": "首相", "せいじ": "政治", "しあい": "試合", "いけん": "意見", "さいきん": "最近", "たぶん": "多分", "はきます": "履きます", "かぶります": "被ります", "うまれます": "生まれます", "ぼうし": "帽子", "めがね": "眼鏡", "まわします": "回します", "おします": "押します", "あるきます": "歩きます", "わたります": "渡ります", "みち": "道", "こうさてん": "交差点", "しんごう": "信号", "かど": "角", "おと": "音", "つれていきます": "連れて行きます", "つれてきます": "連れて来ます", "しょうかいします": "紹介します", "せつめいします": "説明します", "おじいさん": "お爺さん", "おばあさん": "お婆さん", "じゅんび": "準備", "いみ": "意味", "おかし": "お菓子", "じぶんで": "自分で", "かんがえます": "考えます", "つきます": "着きます", "りゅうがくします": "留学します", "いなか": "田舎", "たいしかん": "大使館", "さがします": "探します", "おくれます": "遅れます", "さんかします": "参加します", "もうしこみます": "申し込みます", "じゅうどう": "柔道", "うんどうかい": "運動会", "こんど": "今度", "だれでも": "誰でも", "なんでも": "何でも", "たてます": "建てます", "はしります": "走ります", "みえます": "見えます", "きこえます": "聞こえます", "ひらきます": "開きます", "とり": "鳥", "こえ": "声", "はなび": "花火", "けしき": "景色", "むかし": "昔", "だいどころ": "台所", "おどります": "踊ります", "えらびます": "選びます", "まじめ": "真面目", "えらい": "偉い", "しゅうかん": "習慣", "けいけん": "経験", "にんき": "人気", "かたち": "形", "いろ": "色", "あじ": "味", "ねだん": "値段", "きゅうりょう": "給料", "しょうせつ": "小説", "あきます": "開きます", "しまります": "閉まります", "こわれます": "壊れます", "われます": "割れます", "おれます": "折れます", "やぶれます": "破れます", "おさら": "お皿", "おちゃわん": "お茶碗", "ふくろ": "袋", "さいふ": "財布", "かざります": "飾ります", "ならべます": "並べます", "かたづけます": "片づけます", "きめます": "決めます", "そうだんします": "相談します", "じゅぎょう": "授業", "よてい": "予定", "にんぎょう": "人形", "かびん": "花瓶", "かがみ": "鏡", "げんかん": "玄関", "ろうか": "廊下", "かべ": "壁", "つづけます": "続けます", "みつけます": "見つけます", "にゅうがくします": "入学します", "そつぎょうします": "卒業します", "れんきゅう": "連休", "さくぶん": "作文", "てんらんかい": "展覧会", "けっこんしき": "結婚式", "どうぶつえん": "動物園", "おんせん": "温泉", "おきゃく": "お客", "うんどうします": "運動します", "せいこうします": "成功します", "しっぱいします": "失敗します", "なおります": "治ります", "はれます": "晴れます", "くもります": "曇ります", "しんぱい": "心配", "そら": "空", "たいよう": "太陽", "ほし": "星", "つき": "月", "にげます": "逃げます", "あきらめます": "諦めます", "なげます": "投げます", "まもります": "守ります", "つたえます": "伝えます", "だめ": "駄目", "せんたくき": "洗濯機", "きそく": "規則", "いりぐち": "入口", "でぐち": "出口", "むりょう": "無料", "みがきます": "磨きます", "ほそい": "細い", "ふとい": "太い", "かぐ": "家具", "せつめいしょ": "説明書", "くろ": "黒", "しろ": "白", "あか": "赤", "きいろ": "黄色", "ちゃいろ": "茶色", "さきます": "咲きます", "かわります": "変わります", "こまります": "困ります", "らく": "楽", "ただしい": "正しい", "むこう": "向こう", "しま": "島", "むら": "村", "みなと": "港", "やまのぼり": "山登り", "きかい": "機会", "ほうほう": "方法", "とどきます": "届きます", "ちょきんします": "貯金します", "やせます": "痩せます", "なれます": "慣れます", "かたい": "硬い", "やわらかい": "柔らかい", "こうじょう": "工場", "けんこう": "健康", "まいしゅう": "毎週", "まいつき": "毎月", "かならず": "必ず", "ほめます": "褒めます", "しかります": "叱ります", "さそいます": "誘います", "たのみます": "頼みます", "こわします": "壊します", "はつめいします": "発明します", "はっけんします": "発見します", "こめ": "米", "むぎ": "麦", "どろぼう": "泥棒", "まんが": "漫画", "せかいじゅう": "世界中", "そだてます": "育てます", "なくなります": "亡くなります", "にゅういんします": "入院します", "たいいんします": "退院します", "あかちゃん": "赤ちゃん", "しょうがっこう": "小学校", "ちゅうがっこう": "中学校", "かいがん": "海岸", "うそ": "嘘", "しょるい": "書類", "こたえます": "答えます", "あんしんします": "安心します", "ふくざつ": "複雑", "うれしい": "嬉しい", "かなしい": "悲しい", "はずかしい": "恥ずかしい", "じしん": "地震", "たいふう": "台風", "かじ": "火事", "じこ": "事故", "かぞえます": "数えます", "たしかめます": "確かめます", "しゅっぱつします": "出発します", "とうちゃくします": "到着します", "きけん": "危険", "ひつよう": "必要", "ちきゅう": "地球", "ながさ": "長さ", "おもさ": "重さ", "たかさ": "高さ", "ほんとう": "本当", "まちがい": "間違い", "いただきます": "頂きます", "くださいます": "下さいます", "かわいい": "可愛い", "おいわい": "お祝い", "きょうみ": "興味", "じょうほう": "情報", "ぶんぽう": "文法", "はつおん": "発音", "くつした": "靴下", "ゆびわ": "指輪", "つつみます": "包みます", "わかします": "沸かします", "まぜます": "混ぜます", "べんごし": "弁護士", "おんがくか": "音楽家", "きょういく": "教育", "れきし": "歴史", "ぶんか": "文化", "しゃかい": "社会", "ほうりつ": "法律", "せんそう": "戦争", "へいわ": "平和", "かんづめ": "缶詰", "ふえます": "増えます", "へります": "減ります", "あがります": "上がります", "さがります": "下がります", "じょうぶ": "丈夫", "しあわせ": "幸せ", "うまい": "上手い", "だんぼう": "暖房", "れいぼう": "冷房", "なきます": "泣きます", "わらいます": "笑います", "ぬれます": "濡れます", "すべります": "滑ります", "あんぜん": "安全", "ていねい": "丁寧", "くうき": "空気", "わしょく": "和食", "ようしょく": "洋食", "りゆう": "理由", "あやまります": "謝ります", "しんじます": "信じます", "ようします": "用意します", "ほしょうしょ": "保証書", "りょうしゅうしょ": "領収書", "おくりもの": "贈り物", "ちゅうし": "中止", "きゅうに": "急に", "やきます": "焼きます", "わたします": "渡します", "でます": "出ます", "るす": "留守", "たくはいびん": "宅配便", "げんいん": "原因", "しょくよく": "食欲", "ちょうど": "丁度", "あつまります": "集まります", "わかれます": "別れます", "ながいきします": "長生きします", "ひどい": "酷い", "こわい": "怖い", "てんきよほう": "天気予報", "じんこう": "人口", "かがく": "科学", "いがく": "医学", "さんせい": "賛成", "はんたい": "反対", "きゅうきゅうしゃ": "救急車", "おろします": "降ろします", "とどけます": "届けます", "いや": "嫌", "きびしい": "厳しい", "じゅく": "塾", "じゆうに": "自由に", "つとめます": "勤めます", "すごします": "過ごします", "めしあがります": "召し上がります", "あいさつ": "挨拶", "りょかん": "旅館", "ぼうえき": "貿易", "まいります": "参ります", "もうします": "申します", "ぞんじます": "存じます", "わたくし": "私", "おたく": "お宅", "さいしょに": "最初に", "さいごに": "最後に", "まにあいます": "間に合います", "ひろいます": "拾います", "れんらくします": "連絡します", "ぼんおどり": "盆踊り", "ばしょ": "場所", "こっかいぎじどう": "国会議事堂", "へいじつ": "平日", "ちょくせつ": "直接", "かたづきます": "片づきます", "だします": "出します", "おきば": "置き場", "よこ": "横", "びん": "瓶", "うちゅう": "宇宙", "うちゅうせん": "宇宙船", "ちがいます": "違います", "うちゅうひこうし": "宇宙飛行士", "なみ": "波", "どうぐ": "道具", "いえ": "家", "ほんだな": "本棚", "だいすき": "大好き", "しゅじんこう": "主人公", "ふしぎ": "不思議", "たとえば": "例えば", "とびます": "飛びます", "しょうらい": "将来", "うれます": "売れます", "かみます": "噛みます", "かよいます": "通います", "ねっしん": "熱心", "びよういん": "美容院", "ちから": "力", "しなもの": "品物", "ばんぐみ": "番組", "かしゅ": "歌手", "しょうせつか": "小説家", "むすこ": "息子", "むすこさん": "息子さん", "むすめ": "娘", "むすめさん": "娘さん", "じつは": "実は", "かいわ": "会話", "おしらせ": "お知らせ", "ひにち": "日にち", "たいいくかん": "体育館", "きえます": "消えます", "よごれます": "汚れます", "はずれます": "外れます", "とまります": "止まります", "まちがえます": "間違えます", "おとします": "落とします", "ふきます": "拭きます", "とりかえます": "取り替えます", "えだ": "枝", "えきいん": "駅員", "こうばん": "交番", "へんじ": "返事", "わすれもの": "忘れ物", "あみだな": "網棚", "たしか": "確か", "はり": "針", "さします": "指します", "えきまえ": "駅前", "たおれます": "倒れます", "にし": "西", "もえます": "燃えます", "うえます": "植えます", "もどします": "戻します", "よしゅうします": "予習します", "ふくしゅうします": "復習します", "こうぎ": "講義", "よていひょう": "予定表", "ごみばこ": "ごみ箱", "ひきだし": "引き出し", "いけ": "池", "もとのところ": "元の所", "まわり": "周り", "まんなか": "真ん中", "すみ": "隅", "ひじょうぶくろ": "非常袋", "ひじょうじ": "非常時", "せいかつします": "生活します", "かいちゅうでんとう": "懐中電灯", "まるい": "丸い", "ゆめをみます": "夢を見ます", "めがさめます": "目が覚めます", "あびます": "浴びます", "いれます": "入れます", "おろします": "下ろします", "けんがくします": "見学します", "でんわします": "電話します", "はな": "鼻", "は": "歯", "せ": "背", "おてら": "お寺", "じんじゃ": "神社", "ばん": "〜番", "つぎに": "次に", "あんしょうばんごう": "暗証番号", "きんがく": "金額", "かくにん": "確認", "もっていきます": "持って行きます", "もってきます": "持って来ます", "ざんぎょうします": "残業します", "しゅっちょうします": "出張します", "ぬぎます": "脱ぎます", "あぶない": "危ない", "きんえん": "禁煙", "けんこうほけんしょう": "健康保険証", "うわぎ": "上着", "したぎ": "下着", "おだいじに": "お大事に", "あつめます": "集めます", "すてます": "捨てます", "かえます": "換えます", "げんきん": "現金", "にっき": "日記", "おいのり": "お祈り", "ぶちょう": "部長", "どうぶつ": "動物", "うま": "馬", "とくに": "特に", "ふるさと": "故郷", "れんしゅう": "練習", "ひ": "日", "ちょうし": "調子", "いちども": "一度も", "かんぱい": "乾杯", "むり": "無理", "からだにいい": "体にいい", "いります": "要ります", "しゅうりします": "修理します", "やくにたちます": "役に立ちます", "うごきます": "動きます", "きをつけます": "気をつけます", "ふべん": "不便", "こうつう": "交通", "ぶっか": "物価", "ほうそう": "放送", "ゆめ": "夢", "てんさい": "天才", "はなし": "話", "ひさしぶりですね": "久しぶりですね", "おべんとう": "お弁当", "つごう": "都合", "おさがしですか": "お探しですか", "やちん": "家賃", "わしつ": "和室", "おしいれ": "押し入れ", "ふとん": "布団", "さわります": "触ります", "ひっこしします": "引っ越しします", "あんないします": "案内します", "ひっこし": "引っ越し", "ぜんぶ": "全部", "ははのひ": "母の日", "たります": "足ります", "おく": "億", "ひま": "暇", "てんきん": "転勤", "がんばります": "頑張ります", "すいます": "吸います", "とります": "取ります", "てがみ": "手紙", "しゃしん": "写真", "みせ": "店", "にわ": "庭", "しゅくだい": "宿題", "おはなみ": "お花見", "おさけ": "お酒", "きります": "切ります", "おくります": "送ります", "て": "手", "ねんがじょう": "年賀状", "けしごむ": "消しゴム", "かみ": "紙", "にもつ": "荷物", "きっぷ": "切符", "ちち": "父", "はは": "母", "おとうさん": "お父さん", "おかあさん": "お母さん", "さくら": "桜", "やま": "山", "まち": "町", "たべもの": "食べ物", "ところ": "所", "りょう": "寮", "せいかつ": "生活", "しごと": "仕事", "のみもの": "飲み物", "りょこう": "旅行", "かぶき": "歌舞伎", "え": "絵", "じ": "字", "ろーまじ": "ローマ字", "こまかいおかね": "細かいお金", "じかん": "〜時間", "ようじ": "用事", "やくそく": "約束", "ごしゅじん": "ご主人", "しゅじん": "主人", "おくさん": "奥さん", "つま": "妻", "こども": "子ども", "ぜんぜん": "全然", "はやく": "早く", "ざんねんです": "残念です", "おとこのひと": "男の人", "おんなのひと": "女の人", "おとこのこ": "男の子", "おんなのこ": "女の子", "ぞう": "象", "き": "木", "もの": "物", "でんち": "電池", "はこ": "箱", "たな": "棚", "きっさてん": "喫茶店", "や": "〜屋", "のりば": "乗り場", "けん": "県", "うえ": "上", "した": "下", "まえ": "前", "うしろ": "後ろ", "みぎ": "右", "ひだり": "左", "なか": "中", "そと": "外", "となり": "隣", "ちかく": "近く", "あいだ": "間", "にん": "〜人", "だい": "〜台", "まい": "〜枚", "かい": "〜回", "おにいさん": "お兄さん", "おねえさん": "お姉さん", "おとうとさん": "弟さん", "いもうとさん": "妹さん", "りゅうがくせい": "留学生", "しゅうかん": "〜週間", "かげつ": "〜か月", "ねん": "〜年", "ぜんぶで": "全部で", "ふなびん": "船便", "こうくうびん": "航空便", "おもい": "重い", "かるい": "軽い", "くもり": "曇り", "くうこう": "空港", "せかい": "世界", "おまつり": "お祭り", "きせつ": "季節", "はじめて": "初めて", "さしみ": "刺身", "すし": "寿司", "てんぷら": "天ぷら", "ぶたにく": "豚肉", "とりにく": "とり肉", "ぎゅうにく": "牛肉", "いけばな": "生け花", "もみじ": "紅葉", "おかえりなさい": "お帰りなさい", "むかえます": "迎えます", "たいへん": "大変", "びじゅつ": "美術", "つり": "釣り", "おしょうがつ": "お正月", "ごちゅうもん": "ご注文", "ていしょく": "定食", "ぎゅうどん": "牛どん", "べつべつに": "別々に", "とめます": "止めます", "もちます": "持ちます", "てつだいます": "手伝います", "よびます": "呼びます", "みせます": "見せます", "はいります": "入ります", "ふります": "降ります", "なまえ": "名前", "ちず": "地図", "でんき": "電気", "もんだい": "問題", "こたえ": "答え", "よみかた": "読み方", "かた": "〜方", "もうすこし": "もう少し", "おつり": "お釣り", "おきます": "置きます", "けんきゅうします": "研究します", "しりょう": "資料", "じこくひょう": "時刻表", "せいひん": "製品", "でんしじしょ": "電子辞書", "けいざい": "経済", "しやくしょ": "市役所", "こうこう": "高校", "おもいだします": "思い出します", "きょうし": "教師", "しゃいん": "社員", "さい": "〜歳", "なんさい": "何歳", "からきました": "〜から来ました", "しつれいですが": "失礼ですが", "おなまえは": "お名前は？", "かんこく": "韓国", "ちゅうごく": "中国", "にほん": "日本", "くるま": "車", "ご": "〜語", "おみやげ": "お土産", "おせわになります": "お世話になります", "うけつけ": "受付", "かいだん": "階段", "じどうはんばいき": "自動販売機", "おくに": "お国", "うりば": "売り場", "ちか": "地下", "かい": "〜階", "なんがい": "何階", "えん": "〜円", "ひゃく": "百", "せん": "千", "まん": "万", "じ": "〜時", "ふん": "〜分", "なんじ": "何時", "なんぷん": "何分", "けさ": "今朝", "こんばん": "今晩", "やすみ": "休み", "ひるやすみ": "昼休み", "まいあさ": "毎朝", "まいばん": "毎晩", "まいにち": "毎日", "かいぎ": "会議", "なんようび": "何曜日", "ばんごう": "番号", "なんばん": "何番", "がっこう": "学校", "えき": "駅", "ちかてつ": "地下鉄", "じてんしゃ": "自転車", "あるいて": "歩いて", "ひと": "人", "ともだち": "友達", "かれ": "彼", "かのじょ": "彼女", "かぞく": "家族", "ひとりで": "一人で", "せんしゅう": "先週", "こんしゅう": "今週", "らいしゅう": "来週", "せんげつ": "先月", "こんげつ": "今月", "らいげつ": "来月", "きょねん": "去年", "ことし": "今年", "らいねん": "来年", "むいか": "六日", "なのか": "七日", "ようか": "八日", "ここのか": "九日", "じゅうよっか": "十四日", "にじゅうよっか": "二十四日", "ふつう": "普通", "きゅうこう": "急行", "とっきゅう": "特急", "つぎの": "次の", "ばんせん": "〜番線"};
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 var STORAGE_KEY = 'goi-v4';
@@ -536,6 +623,7 @@ var listSearchVal  = '';   // search filter in My List
 var gsSheetId      = '';   // Google Sheets ID if linked
 var gsAccessToken  = '';   // OAuth access token
 var weakFilter     = false; // only show SRS 0-1 in study
+var newFilter      = false; // only show SRS 0 (new) in study
 var showKanji      = true;  // true=show kanji first, false=show hiragana first
 var questionLimit = 10;   // max questions for Fill-in-blank and Grammar (0 = unlimited)
 var modeQCount    = 0;    // questions answered in current Fill-in/Grammar session
@@ -575,6 +663,20 @@ async function loadCards() {
                example_jp:'', example_en:'', customTags:[], typeOverride:'' };
     });
     await saveCards();
+  } else {
+    // Merge any new SEED entries not yet in saved cards
+    var existingJp = new Set(cards.map(function(c){ return c.jp; }));
+    var newFromSeed = 0;
+    SEED.forEach(function(s) {
+      if (!existingJp.has(s.jp)) {
+        cards.push({ jp:s.jp, reading:s.r, en:s.en, type:'vocab', lesson:s.l,
+          srs:0, nextReview:Date.now(), id:Math.random().toString(36).slice(2),
+          example_jp:'', example_en:'', customTags:[], typeOverride:'' });
+        existingJp.add(s.jp);
+        newFromSeed++;
+      }
+    });
+    if (newFromSeed > 0) { console.log('Merged ' + newFromSeed + ' new SEED cards'); await saveCards(); }
   }
   // Migrate: update jp fields to kanji, add missing fields
   var migrated = 0;
@@ -1021,6 +1123,11 @@ function getFilteredCards() {
   var r = cards.filter(function(c){ return selectedLessons.has(c.lesson); });
   if (selectedTypes.size < 5) {
     r = r.filter(function(c){ return selectedTypes.has(classifyCard(c)); });
+  }
+  if (newFilter) {
+    r = r.filter(function(c){ return (c.srs||0) === 0; });
+  } else if (weakFilter) {
+    r = r.filter(function(c){ return (c.srs||0) <= 1; });
   }
   return r;
 }
@@ -1568,6 +1675,7 @@ var TYPE_META = [
 var TYPE_COLORS = {verb:['#e8f4fd','#1565c0'], 'i-adj':['#f3e8fd','#6a1b9a'], 'na-adj':['#fce8fd','#880e4f'], noun:['#e8f5e9','#2e7d32'], other:['#fff8e1','#f57f17']};
 
 var listWeakOnly = false;
+var listNewOnly  = false;
 var listCustomTag = '';   // active custom tag filter, '' = all
 
 function renderList() {
@@ -1624,12 +1732,15 @@ function renderList() {
   // ── Weak filter button state ──
   var lwb = document.getElementById('listWeakBtn');
   if (lwb) lwb.className = 'f-btn' + (listWeakOnly ? ' active' : '');
+  var lnb = document.getElementById('listNewBtn');
+  if (lnb) lnb.className = 'f-btn' + (listNewOnly ? ' active' : '');
 
   // ── Apply filters ──
   var filtered = cards;
   if (listLesson !== 'all') filtered = filtered.filter(function(c){ return c.lesson === listLesson; });
   if (listType   !== 'all') filtered = filtered.filter(function(c){ return classifyCard(c) === listType; });
   if (listCustomTag !== '')  filtered = filtered.filter(function(c){ return (c.customTags||[]).indexOf(listCustomTag) !== -1; });
+  if (listNewOnly)           filtered = filtered.filter(function(c){ return (c.srs||0) === 0; });
   if (listWeakOnly)          filtered = filtered.filter(function(c){ return (c.srs||0) <= 1; });
   if (listSearchVal) {
     var q = listSearchVal.toLowerCase();
@@ -1680,14 +1791,35 @@ function renderList() {
 
 function toggleListWeak(btn) {
   listWeakOnly = !listWeakOnly;
+  if (listWeakOnly) listNewOnly = false;
+  renderList();
+}
+
+function toggleListNew(btn) {
+  listNewOnly = !listNewOnly;
+  if (listNewOnly) listWeakOnly = false;
   renderList();
 }
 
 function toggleWeakFilter(btn) {
   weakFilter = !weakFilter;
+  if (weakFilter) newFilter = false;
   btn.style.background  = weakFilter ? '#fdecea' : 'var(--hover)';
   btn.style.color       = weakFilter ? '#c62828'  : 'var(--muted)';
   btn.style.borderColor = weakFilter ? '#e57373'  : 'transparent';
+  var nb = document.getElementById('newBtn');
+  if (nb) { nb.style.background = 'var(--hover)'; nb.style.color = 'var(--muted)'; nb.style.borderColor = 'transparent'; }
+  rebuildAndStart();
+}
+
+function toggleNewFilter(btn) {
+  newFilter = !newFilter;
+  if (newFilter) weakFilter = false;
+  btn.style.background  = newFilter ? '#e3f2fd' : 'var(--hover)';
+  btn.style.color       = newFilter ? '#1565c0'  : 'var(--muted)';
+  btn.style.borderColor = newFilter ? '#90caf9'  : 'transparent';
+  var wb = document.getElementById('weakBtn');
+  if (wb) { wb.style.background = 'var(--hover)'; wb.style.color = 'var(--muted)'; wb.style.borderColor = 'transparent'; }
   rebuildAndStart();
 }
 
@@ -1842,6 +1974,9 @@ function setListTypeFilter(f) { listType = f; renderList(); }
 
 
 async function deleteCard(i) {
+  var c = cards[i];
+  if (!c) return;
+  if (!confirm('Delete "' + c.jp + ' — ' + c.en + '"?')) return;
   cards.splice(i,1);
   await saveCards();
   renderList();
@@ -2268,10 +2403,107 @@ async function startPDF() {
   setStatus('Added ' + added + ' cards from PDF.');
 }
 
+// ── LOCAL PARSER (no API needed) ──────────────────────────────────────────
+function parseLocally(raw) {
+  var lines = raw.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+  var results = [];
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var parts = null;
+    // Try pipe-separated: JP | reading | EN | lesson
+    if (line.indexOf('|') !== -1) {
+      parts = line.split('|').map(function(s){ return s.trim(); });
+      if (parts.length >= 3) {
+        results.push({jp: parts[0], reading: parts[1] || '', en: parts[2], lesson: parts[3] || ''});
+        continue;
+      }
+    }
+    // Try tab-separated
+    if (line.indexOf('\t') !== -1) {
+      parts = line.split('\t').map(function(s){ return s.trim(); });
+      if (parts.length >= 2) {
+        results.push({jp: parts[0], reading: parts.length >= 3 ? parts[1] : '', en: parts[parts.length >= 3 ? 2 : 1], lesson: parts[3] || ''});
+        continue;
+      }
+    }
+    // Try dash-separated: JP - EN  or  JP (reading) - EN
+    var dashMatch = line.match(/^(.+?)\s*(?:\(([^)]+)\))?\s*[-\u2013\u2014]\s*(.+?)(?:\s*[-\u2013\u2014]\s*(.+))?$/);
+    if (dashMatch) {
+      results.push({jp: dashMatch[1].trim(), reading: dashMatch[2] ? dashMatch[2].trim() : '', en: dashMatch[3].trim(), lesson: dashMatch[4] ? dashMatch[4].trim() : ''});
+      continue;
+    }
+    // Try comma-separated: JP, reading, EN, lesson
+    if (line.indexOf(',') !== -1) {
+      parts = line.split(',').map(function(s){ return s.trim(); });
+      if (parts.length >= 2) {
+        if (/[\u3000-\u9faf\u3040-\u309f\u30a0-\u30ff]/.test(parts[0])) {
+          results.push({jp: parts[0], reading: parts.length >= 3 ? parts[1] : '', en: parts[parts.length >= 3 ? 2 : 1], lesson: parts[3] || ''});
+          continue;
+        }
+      }
+    }
+  }
+  return results;
+}
+
+async function addManualCard() {
+  var jp = document.getElementById('manualJP').value.trim();
+  var reading = document.getElementById('manualReading').value.trim();
+  var en = document.getElementById('manualEN').value.trim();
+  var lesson = document.getElementById('manualLesson').value.trim();
+  var statusEl = document.getElementById('manualStatus');
+  if (!jp || !en) {
+    if (statusEl) { statusEl.style.color = 'var(--accent)'; statusEl.textContent = 'Need at least JP and English.'; }
+    return;
+  }
+  if (cards.find(function(c){ return c.jp === jp; })) {
+    if (statusEl) { statusEl.style.color = 'var(--accent)'; statusEl.textContent = 'Card already exists: ' + jp; }
+    return;
+  }
+  var nc = {jp: jp, reading: reading, en: en, type: 'vocab', lesson: lesson,
+    srs: 0, nextReview: Date.now(), id: Math.random().toString(36).slice(2),
+    example_jp: '', example_en: '', customTags: [], typeOverride: ''};
+  nc.typeOverride = classifyCard(nc);
+  cards.push(nc);
+  await saveCards();
+  document.getElementById('manualJP').value = '';
+  document.getElementById('manualReading').value = '';
+  document.getElementById('manualEN').value = '';
+  if (statusEl) { statusEl.style.color = 'var(--accent2)'; statusEl.textContent = '\u2713 Added: ' + jp + ' \u2014 ' + en; }
+}
+
 async function processInput() {
   var raw = document.getElementById('pasteInput').value.trim();
   if (!raw) return;
-  setStatus('Claude is parsing…');
+
+  // Try local parsing first (no API needed)
+  var localParsed = parseLocally(raw);
+  if (localParsed.length > 0) {
+    var added = 0;
+    localParsed.forEach(function(item) {
+      if (!item.jp) return;
+      if (!cards.find(function(c){ return c.jp === item.jp; })) {
+        var nc = {jp: item.jp, reading: item.reading || '', en: item.en || '', type: 'vocab',
+          lesson: item.lesson || '', example_jp: '', example_en: '',
+          srs: 0, nextReview: Date.now(), id: Math.random().toString(36).slice(2),
+          customTags: [], typeOverride: ''};
+        nc.typeOverride = classifyCard(nc);
+        cards.push(nc);
+        added++;
+      }
+    });
+    await saveCards();
+    setStatus('Added ' + added + ' card' + (added !== 1 ? 's' : '') + ' (local parse)!');
+    document.getElementById('pasteInput').value = '';
+    return;
+  }
+
+  // Fall back to API for freeform/natural text
+  if (!getApiKey()) {
+    setStatus('No API key set. Use pipe format (JP | reading | EN | lesson) or add your key in Settings.', true);
+    return;
+  }
+  setStatus('Claude is parsing\u2026');
   document.getElementById('processBtn').disabled = true;
   try {
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -2297,7 +2529,7 @@ async function processInput() {
     await saveCards();
     setStatus('Added ' + added + ' card' + (added!==1?'s':'') + '!');
     document.getElementById('pasteInput').value = '';
-  } catch(err){ setStatus('Parse error — try again.', true); }
+  } catch(err){ setStatus('Parse error \u2014 try pipe format (JP | reading | EN) or check API key.', true); }
   document.getElementById('processBtn').disabled = false;
 }
 
