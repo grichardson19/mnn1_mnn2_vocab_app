@@ -104,11 +104,6 @@ textarea:focus{border-color:var(--accent2)}
 .next-btn:hover{opacity:.88}
 .next-btn.show{display:block;animation:fadeIn .3s}
 .dont-know-btn{font-size:12px;padding:6px 14px}
-.fillin-sentence{font-size:18px;line-height:2;font-family:var(--font-jp);margin:12px 0}
-.fillin-input{border:none;border-bottom:2px solid var(--accent);background:none;font-size:18px;font-family:var(--font-jp);color:var(--ink);outline:none;width:90px;text-align:center}
-.fillin-fb{font-size:14px;margin-top:10px;padding:10px 14px;border-radius:8px}
-.fillin-ok{background:#e8f5e9;color:#2e7d32}
-.fillin-ng{background:#fdecea;color:#c62828}
 .flashcard{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;text-align:center;gap:6px;padding:20px}
 .fc-front{font-family:var(--font-jp);font-size:44px;line-height:1.2}
 .fc-reading{font-size:15px;color:var(--muted)}
@@ -118,7 +113,6 @@ textarea:focus{border-color:var(--accent2)}
 .srs-btn{padding:9px 18px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-family:var(--font-ui);font-weight:500}
 .srs-again{background:#fdecea;color:#c62828}.srs-hard{background:#fff8e1;color:#f57f17}
 .srs-good{background:#e8f5e9;color:#2e7d32}.srs-easy{background:#e3f2fd;color:#1565c0}
-.grammar-q{font-family:var(--font-jp);font-size:20px;line-height:1.7;text-align:center;padding:10px 0 14px;border-bottom:1px solid var(--border);margin-bottom:14px}
 .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
 .stat-box{background:var(--hover);border-radius:9px;padding:14px;text-align:center}
 .stat-num{font-size:28px;font-weight:300;color:var(--accent)}
@@ -174,62 +168,9 @@ input[type=file]{display:none}
 
   <!-- ── ADD WORDS ── -->
   <div id="tab-input">
-    <div class="card">
-      <div class="section-label">Paste vocab or grammar</div>
-      <textarea id="pasteInput" rows="4" placeholder="Paste a word list, grammar patterns, or anything Japanese here."></textarea>
-      <div style="margin-top:10px">
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;font-weight:500">Example formats</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <div class="syntax-example" onclick="useSyntaxExample(this)">
-            <div class="syntax-label">Pipe separated</div>
-            <code class="syntax-code">食べます | たべます | eat | L6
-飲みます | のみます | drink | L6</code>
-          </div>
-          <div class="syntax-example" onclick="useSyntaxExample(this)">
-            <div class="syntax-label">Simple list</div>
-            <code class="syntax-code">食べます - eat
-飲みます - drink
-大学 - university</code>
-          </div>
-          <div class="syntax-example" onclick="useSyntaxExample(this)">
-            <div class="syntax-label">Natural text</div>
-            <code class="syntax-code">食べます (tabemasu) means "to eat". 飲みます means "to drink".</code>
-          </div>
-        </div>
-      </div>
-      <div class="section-label" style="margin-top:14px">Or upload a file</div>
-      <div class="upload-grid">
-        <button class="upload-btn" onclick="document.getElementById('csvFile').click()"><span class="upload-icon">📄</span>CSV / TXT</button>
-        <button class="upload-btn" onclick="document.getElementById('imgFile').click()"><span class="upload-icon">📷</span>Photo</button>
-        <button class="upload-btn" onclick="document.getElementById('pdfFile').click()"><span class="upload-icon">📕</span>PDF</button>
-      </div>
-      <input type="file" id="csvFile" accept=".csv,.txt" onchange="handleCSV(event)">
-      <input type="file" id="imgFile" accept="image/*" onchange="handleImage(event)">
-      <input type="file" id="pdfFile" accept=".pdf,application/pdf" onchange="handlePDF(event)">
-      <div class="pdf-progress-box" id="pdfBox">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;font-weight:500" id="pdfFileName">PDF</span>
-          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="pdfStop=true">Stop</button>
-        </div>
-        <div class="pdf-controls">
-          <span class="pdf-range-label">Pages:</span>
-          <input type="number" class="pdf-range-input" id="pdfFrom" value="1" min="1">
-          <span class="pdf-range-label">to</span>
-          <input type="number" class="pdf-range-input" id="pdfTo" min="1">
-          <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="startPDF()">Extract pages</button>
-        </div>
-        <div class="pdf-bar-wrap"><div class="pdf-bar" id="pdfBar" style="width:0%"></div></div>
-        <div class="pdf-log" id="pdfLog"></div>
-      </div>
-      <div id="inputStatus" class="status-msg" style="display:none"></div>
-      <div class="action-row">
-        <button class="btn btn-secondary" onclick="document.getElementById('pasteInput').value='';document.getElementById('inputStatus').style.display='none'">Clear</button>
-        <button class="btn btn-primary" id="processBtn" onclick="processInput()">Extract &amp; Add Cards →</button>
-      </div>
-    </div>
     <div class="card" style="font-size:13px;color:var(--muted);line-height:1.9">
       <b style="color:var(--ink)">MNN1 &amp; MNN2 fully loaded</b> — all 50 lessons pre-loaded!<br>
-      Upload a PDF to extract more vocab • Any paste format works
+      Add your own words below or upload a PDF to extract more vocab
     </div>
     <div class="card" style="margin-top:0">
       <div class="section-label">Quick add (no API needed)</div>
@@ -256,6 +197,36 @@ input[type=file]{display:none}
         </div>
       </div>
     </div>
+    <div class="card">
+      <div class="section-label">Paste vocab or grammar</div>
+      <textarea id="pasteInput" rows="4" placeholder="Paste a word list, grammar patterns, or anything Japanese here."></textarea>
+      <div style="margin-top:10px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;font-weight:500">Example formats</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="syntax-example" onclick="useSyntaxExample(this)">
+            <div class="syntax-label">Pipe separated</div>
+            <code class="syntax-code">食べます | たべます | eat | L6
+飲みます | のみます | drink | L6</code>
+          </div>
+          <div class="syntax-example" onclick="useSyntaxExample(this)">
+            <div class="syntax-label">Simple list</div>
+            <code class="syntax-code">食べます - eat
+飲みます - drink
+大学 - university</code>
+          </div>
+        </div>
+      </div>
+      <div class="section-label" style="margin-top:14px">Or upload a file</div>
+      <div class="upload-grid" style="grid-template-columns:1fr">
+        <button class="upload-btn" onclick="document.getElementById('csvFile').click()"><span class="upload-icon">📄</span>CSV / TXT</button>
+      </div>
+      <input type="file" id="csvFile" accept=".csv,.txt" onchange="handleCSV(event)">
+      <div id="inputStatus" class="status-msg" style="display:none"></div>
+      <div class="action-row">
+        <button class="btn btn-secondary" onclick="document.getElementById('pasteInput').value='';document.getElementById('inputStatus').style.display='none'">Clear</button>
+        <button class="btn btn-primary" id="processBtn" onclick="processInput()">Extract &amp; Add Cards →</button>
+      </div>
+    </div>
   </div>
 
   <!-- ── MY LIST ── -->
@@ -265,7 +236,8 @@ input[type=file]{display:none}
         <div class="section-label" style="margin:0;flex:1">Saved cards</div>
         <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="exportCSV()">&#x2B07; Export</button>
         <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="document.getElementById('importFile').click()">&#x2B06; Import</button>
-        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" id="gsBtn" onclick="openGoogleSheets()">&#x1F4C4; Sheets</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="syncToSheets()">&#x2B06; Push</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="pullFromSheets()">&#x2B07; Pull</button>
         <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="if(confirm('Delete all cards?')){cards=[];saveCards();renderList()}">Clear all</button>
       </div>
       <input type="file" id="importFile" accept=".csv,.tsv" onchange="importCSV(event)" style="display:none">
@@ -278,7 +250,8 @@ input[type=file]{display:none}
       </div>
       <div id="gsSyncRow" style="display:none;background:#e8f5e9;border-radius:9px;padding:10px 14px;margin-bottom:10px;font-size:13px;align-items:center;gap:8px">
         <span style="flex:1;color:#2e7d32">&#x2713; Linked to Google Sheets</span>
-        <button class="btn btn-primary" style="font-size:11px;padding:5px 12px;background:#2e7d32" onclick="syncToSheets()">Sync now</button>
+        <button class="btn btn-primary" style="font-size:11px;padding:5px 12px;background:#2e7d32" onclick="syncToSheets()">&#x2B06; Push</button>
+        <button class="btn btn-primary" style="font-size:11px;padding:5px 12px;background:#1565c0" onclick="pullFromSheets()">&#x2B07; Pull</button>
         <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="unlinkSheets()">Unlink</button>
       </div>
       <div class="filter-row" id="listLessonFilters"></div>
@@ -321,17 +294,8 @@ input[type=file]{display:none}
       <div class="quiz-type-row">
         <button class="quiz-type-btn active" onclick="setQuizType('mc-jp-en',this)">JP → EN</button>
         <button class="quiz-type-btn" onclick="setQuizType('mc-en-jp',this)">EN → JP</button>
-        <button class="quiz-type-btn" onclick="setQuizType('fillin',this)">Fill in blank</button>
-        <button class="quiz-type-btn" onclick="setQuizType('grammar',this)">Grammar</button>
         <button class="quiz-type-btn" onclick="setQuizType('flashcard',this)">Flashcard</button>
       </div>
-    </div>
-    <div id="qLimitRow" style="display:none;align-items:center;gap:10px;margin-bottom:12px;padding:10px 14px;background:var(--hover);border-radius:9px">
-      <span style="font-size:13px;color:var(--muted)">Questions per session:</span>
-      <input type="number" id="qLimitInput" min="1" max="99" value="10"
-        style="width:52px;border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:14px;font-family:var(--font-ui);background:var(--card);color:var(--ink);text-align:center"
-        onchange="questionLimit=Math.max(1,parseInt(this.value)||10)">
-      <span style="font-size:12px;color:var(--muted)">(0 = unlimited)</span>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <span style="font-size:12px;color:var(--muted)">Show terms as:</span>
@@ -372,22 +336,6 @@ input[type=file]{display:none}
   <!-- ── SETTINGS ── -->
   <div id="tab-settings" style="display:none">
     <div class="card">
-      <div class="section-label">API Key</div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px">
-        Required for Fill in blank, Grammar quiz, PDF extraction, and paste-to-cards.<br>
-        Get yours at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent2)">console.anthropic.com</a>.
-        Your key is stored locally in this browser only.
-      </p>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="apiKeyInput" type="password" placeholder="sk-ant-api03-…"
-          style="flex:1;border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:13px;font-family:var(--font-ui);background:var(--paper);color:var(--ink);outline:none">
-        <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
-        <button class="btn btn-secondary" onclick="testApiKey()">Test</button>
-      </div>
-      <div id="apiKeyStatus" style="font-size:12px;margin-top:8px;display:none"></div>
-    </div>
-
-    <div class="card">
       <div class="section-label">Display</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
         <span style="font-size:14px">Show terms as</span>
@@ -399,9 +347,10 @@ input[type=file]{display:none}
     </div>
 
     <div class="card">
-      <div class="section-label">Google Sheets</div>
+      <div class="section-label">Google Sheets (2-way sync)</div>
       <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px">
-        Sync your card list to a Google Sheet automatically.
+        Sync your card list to and from a Google Sheet.<br>
+        <b>Push</b> sends your cards to the sheet. <b>Pull</b> imports changes from the sheet back into the app.<br>
         Requires a Google OAuth 2.0 Client ID with <code style="background:var(--hover);padding:1px 5px;border-radius:4px;font-size:11px">https://claude.ai</code> as an authorised origin.
       </p>
       <div style="margin-bottom:10px">
@@ -416,10 +365,19 @@ input[type=file]{display:none}
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="saveGSSettings()">Save &amp; Connect</button>
-        <button class="btn btn-secondary" id="gsSyncBtn" style="display:none" onclick="syncToSheets()">&#x1F504; Sync now</button>
+        <button class="btn btn-secondary" id="gsSyncBtn" onclick="syncToSheets()">&#x2B06; Push to Sheet</button>
+        <button class="btn btn-secondary" id="gsPullBtn" onclick="pullFromSheets()">&#x2B07; Pull from Sheet</button>
         <button class="btn btn-secondary" onclick="unlinkSheets()">Disconnect</button>
       </div>
       <div id="gsSettingsStatus" style="font-size:12px;margin-top:8px;display:none"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Reset</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px">
+        Reset all cards back to the original MNN1 &amp; MNN2 seed data. This will erase all your SRS progress, custom tags, and any cards you added manually.
+      </p>
+      <button class="btn" style="background:#fdecea;color:#c62828" onclick="showResetDialog()">Reset to defaults…</button>
     </div>
 
     <div class="card" style="font-size:12px;color:var(--muted);line-height:1.8">
@@ -427,17 +385,13 @@ input[type=file]{display:none}
       MNN1 &amp; MNN2 Vocab Study App<br>
       Author: Greg Richardson<br>
       MNN1 L1–25 + MNN2 L26–50 &nbsp;&bull;&nbsp; 1310 seed cards<br>
-      Powered by Claude Sonnet &nbsp;&bull;&nbsp; SRS spaced repetition
+      SRS spaced repetition &nbsp;&bull;&nbsp; Fully offline
     </div>
   </div>
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-if (typeof pdfjsLib !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
 
 // ── SEED DATA ──────────────────────────────────────────────────────────────
 const SEED=[
@@ -615,10 +569,8 @@ var quizDeckPos  = 0;
 var currentCard  = null;
 var currentMode  = 'mc-jp-en';
 var flipped      = false;
-var fillData     = null;
 var answered     = false;
 var quizScore    = {correct:0, wrong:0, total:0};
-var pdfStop      = false;
 var customTagsList = [];   // all user-created tag strings
 var listSearchVal  = '';   // search filter in My List
 var gsSheetId      = '';   // Google Sheets ID if linked
@@ -626,9 +578,6 @@ var gsAccessToken  = '';   // OAuth access token
 var weakFilter     = false; // only show SRS 0-1 in study
 var newFilter      = false; // only show SRS 0 (new) in study
 var showKanji      = true;  // true=show kanji first, false=show hiragana first
-var questionLimit = 10;   // max questions for Fill-in-blank and Grammar (0 = unlimited)
-var modeQCount    = 0;    // questions answered in current Fill-in/Grammar session
-var pdfDoc       = null;
 var listLesson   = 'all';
 var listType     = 'all';
 
@@ -1172,10 +1121,6 @@ function setQuizType(t, btn) {
   currentMode = t;
   document.querySelectorAll('.quiz-type-btn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
-  // Show question-limit row only for fill-in and grammar
-  var limitRow = document.getElementById('qLimitRow');
-  if (limitRow) limitRow.style.display = (t==='fillin'||t==='grammar') ? 'flex' : 'none';
-  modeQCount = 0;
   buildDeck();
   quizScore = {correct:0, wrong:0, total:0};
   showNextCard();
@@ -1222,23 +1167,6 @@ function showNextCard() {
   var status  = document.getElementById('deckStatus');
   var progBar = document.getElementById('quizProgress');
 
-  // For fill-in / grammar, enforce question limit
-  if ((currentMode==='fillin'||currentMode==='grammar') && questionLimit>0 && modeQCount>=questionLimit) {
-    var pct = questionLimit ? Math.round((quizScore.correct/questionLimit)*100) : 0;
-    content.innerHTML =
-      '<div class="complete-screen">'
-      + '<div class="complete-icon">&#127881;</div>'
-      + '<div class="complete-title">Session complete!</div>'
-      + '<div class="complete-sub">' + questionLimit + ' questions &nbsp;&bull;&nbsp; '
-      + quizScore.correct + ' correct &nbsp;&bull;&nbsp; ' + pct + '%</div>'
-      + '<div class="complete-btns">'
-      + '<button class="btn btn-primary" onclick="modeQCount=0;quizScore={correct:0,wrong:0,total:0};showNextCard()">&#x1F500;&nbsp;New session</button>'
-      + '</div></div>';
-    if (progBar) progBar.style.width = '100%';
-    if (status)  status.textContent  = questionLimit + ' / ' + questionLimit + ' questions';
-    return;
-  }
-
   if (!quizDeck.length) {
     empty.style.display = '';
     content.innerHTML = '';
@@ -1273,19 +1201,11 @@ function showNextCard() {
 
   var pct = Math.round((quizDeckPos / quizDeck.length) * 100);
   progBar.style.width = pct + '%';
-  if (currentMode==='fillin' || currentMode==='grammar') {
-    status.textContent = questionLimit>0
-      ? modeQCount + ' / ' + questionLimit + ' questions'
-      : 'Q' + modeQCount;
-  } else {
-    status.textContent = quizDeckPos + ' / ' + quizDeck.length + ' cards';
-  }
+  status.textContent = quizDeckPos + ' / ' + quizDeck.length + ' cards';
   empty.style.display = 'none';
 
   if      (currentMode === 'mc-jp-en')  renderMC(true);
   else if (currentMode === 'mc-en-jp')  renderMC(false);
-  else if (currentMode === 'fillin')    { modeQCount++; renderFillIn(); }
-  else if (currentMode === 'grammar')   { modeQCount++; renderGrammarQuiz(); }
   else                                  renderFlashcard();
 }
 
@@ -1446,188 +1366,6 @@ function updateSRS(id, ok) {
 }
 
 // ── FILL IN BLANK ───────────────────────────────────────────────────────────
-async function renderFillIn() {
-  var card = currentCard;
-  var el = document.getElementById('quizContent');
-  el.innerHTML = scoreHeader()
-    + '<div class="ai-thinking"><div class="dot-pulse"><span></span><span></span><span></span></div> Writing a sentence…</div>';
-  try {
-    // For verbs, prioritize testing plain/potential forms
-    var isVerb = classifyCard(card) === 'verb';
-    var vf = isVerb ? getVerbForms(card) : null;
-    var fillPrompt;
-    if (vf) {
-      var wordDisplay = showKanji ? card.jp : (card.reading || card.jp);
-      var kanaNote = showKanji ? '' : ' Write the sentence in HIRAGANA only (no kanji).';
-      fillPrompt = 'Write ONE simple Japanese sentence that tests a VERB FORM of "' + wordDisplay + '" ('+ card.en +').' + kanaNote
-        + ' Prioritize using the PLAIN form (' + vf.plain + ') or POTENTIAL form (' + vf.pot + '). '
-        + 'You may also use: te-form (' + vf.te + '), plain past (' + vf.ta + '), or plain negative (' + vf.nai + '). '
-        + 'Replace the conjugated verb with ＿＿＿ in the sentence. '
-        + 'Return ONLY JSON with no markdown: {"sentence":"Japanese sentence with ＿＿＿","answer":"the conjugated form used","translation":"English translation","form_used":"e.g. plain form / potential form"}';
-    } else {
-      var wordRef = showKanji ? card.jp : (card.reading || card.jp);
-      var kanaNote2 = showKanji ? '' : ' Write the sentence in HIRAGANA only (no kanji).';
-      fillPrompt = 'Write ONE simple Japanese sentence using "' + wordRef + '" (' + card.en + ').' + kanaNote2 + ' Replace the word with ＿＿＿. Return ONLY JSON with no markdown: {"sentence":"...","answer":"' + wordRef + '","translation":"English translation","form_used":""}';
-    }
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:300,
-        messages:[{role:'user',content:fillPrompt}]
-      })
-    });
-    var d = await resp.json();
-    if (d.error) throw new Error('API: ' + (d.error.message || d.error.type));
-    var txt = d.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
-    fillData = JSON.parse(txt);
-    var formLabel = (fillData.form_used && classifyCard(card)==='verb')
-      ? '<span style="font-size:11px;background:#e8f4fd;color:#1565c0;padding:2px 8px;border-radius:10px;margin-left:6px">' + fillData.form_used + '</span>'
-      : '';
-    // Show reading (hiragana) of the card as hint; English translation hidden behind toggle
-    var cardReading = card.reading && card.reading !== card.jp ? card.reading : '';
-    var transEncoded = encodeURIComponent(fillData.translation);
-    el.innerHTML = scoreHeader()
-      + '<div class="q-label">Fill in the blank' + formLabel + '</div>'
-      + '<div class="fillin-sentence" id="fillSent"></div>'
-      + (cardReading ? '<div style="font-size:14px;color:var(--accent2);margin-top:4px;font-family:var(--font-jp)">' + cardReading + '</div>' : '')
-      + '<div class="hint-row" style="margin-top:6px">'
-      + '<button class="hint-toggle" onclick="toggleFillTranslation(this)" data-trans="' + transEncoded + '">Show translation &#x25be;</button>'
-      + '<div class="hint-text" id="fillTransDiv" style="font-size:12px;color:var(--muted);font-family:var(--font-ui)"></div>'
-      + '</div>'
-      + '<div id="fillFb"></div>'
-      + '<div class="action-row" style="margin-top:10px">'
-      + '<button class="btn btn-secondary" id="showAnsBtn" onclick="showFillAnswer()">Show answer</button>'
-      + '<button class="btn btn-primary" onclick="checkFill()">Check &#x2192;</button>'
-      + '</div>';
-    // Build sentence with input — done via DOM to avoid quote nesting
-    var sent = document.getElementById('fillSent');
-    var parts = fillData.sentence.split('＿＿＿');
-    if (parts.length >= 2) {
-      sent.appendChild(document.createTextNode(parts[0]));
-      var inp = document.createElement('input');
-      inp.className = 'fillin-input'; inp.id = 'fillAns'; inp.placeholder = '？';
-      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') checkFill(); });
-      sent.appendChild(inp);
-      sent.appendChild(document.createTextNode(parts.slice(1).join('＿＿＿')));
-      inp.focus();
-    } else {
-      sent.textContent = fillData.sentence;
-    }
-  } catch(e) {
-    el.innerHTML = '<div class="empty-state">Could not generate.<br><span style="font-size:11px;color:var(--accent)">' + (e.message||e) + '</span><br><br><button class="btn btn-primary" onclick="nextCard()">Try another &#x2192;</button></div>';
-  }
-}
-
-function showFillAnswer() {
-  var inp = document.getElementById('fillAns');
-  if (inp && fillData) inp.value = fillData.answer;
-}
-
-function checkFill() {
-  if (!fillData) return;
-  var inp = document.getElementById('fillAns');
-  if (!inp) return;
-  var ans = inp.value.trim();
-  var ok  = ans===fillData.answer || (currentCard && ans===currentCard.reading);
-  if (ok) quizScore.correct++; else quizScore.wrong++;
-  var reading = (currentCard && currentCard.reading && currentCard.reading!==currentCard.jp) ? ' (' + currentCard.reading + ')' : '';
-  document.getElementById('fillFb').innerHTML =
-    '<div class="fillin-fb ' + (ok?'fillin-ok':'fillin-ng') + '">'
-    + (ok ? '✓ Correct!' : '✗ Answer: ' + fillData.answer + reading) + '</div>';
-  inp.disabled = true;
-  if (currentCard) updateSRS(currentCard.id, ok);
-  setTimeout(nextCard, 1500);
-}
-
-// ── GRAMMAR QUIZ ────────────────────────────────────────────────────────────
-async function renderGrammarQuiz() {
-  var pool = getFilteredCards();
-  var lessonArr = Array.from(selectedLessons).sort(function(a,b){
-    return parseInt(a.replace(/\D/g,''))-parseInt(b.replace(/\D/g,''));
-  });
-  var lessonList = lessonArr.slice(0,8).join(', ') + (lessonArr.length>8?'…':'');
-  var sampleWords = shuffle(pool.slice()).slice(0,20).map(function(c){ return (showKanji ? c.jp : (c.reading||c.jp)) + '(' + c.en + ')'; }).join(', ');
-  var el = document.getElementById('quizContent');
-  el.innerHTML = scoreHeader()
-    + '<div class="ai-thinking"><div class="dot-pulse"><span></span><span></span><span></span></div> Writing a grammar question…</div>';
-  try {
-    // Include verb forms if the current card is a verb
-  var verbCtx = '';
-  if (currentCard && classifyCard(currentCard) === 'verb') {
-    verbCtx = verbFormsText(currentCard);
-  }
-  var verbInstruction = verbCtx
-    ? 'The card being tested is a VERB. ' + verbCtx + '\n\nPrioritize questions about the PLAIN (dictionary) form or POTENTIAL form. '
-      + 'Good question types: "What is the plain form of X?", "Complete the sentence using potential form", "Which sentence uses the correct verb form?". '
-      + (showKanji ? '' : 'Write all Japanese in HIRAGANA only. ')
-    : '';
-  var kanaInstr = showKanji ? '' : 'IMPORTANT: Write question_jp and all options in HIRAGANA only (no kanji). ';
-    var prompt = 'You are a Japanese grammar teacher for Minna no Nihongo. Lessons in focus: '+lessonList+'. ' + kanaInstr
-    + verbInstruction
-    + 'Vocabulary: '+sampleWords+'. Create ONE multiple-choice grammar question (sentence completion, particle choice, verb form, or pattern meaning). '
-    + 'Return ONLY valid JSON with no markdown. Fields: '
-    + '"question_jp": the complete question written IN JAPANESE (e.g. 「___に　何を入れますか」or「正しい文はどれですか」), '
-    + '"question_en": English translation of the question (used as a hidden hint), '
-    + '"options": array of 4 answer choices in Japanese, '
-    + '"correct": 0-based index of correct answer, '
-    + '"explanation": explanation in English of why the answer is correct. '
-    + 'Example: {"question_jp":"___を　食べます。（正しい助詞は？）","question_en":"Which particle is correct?","options":["が","は","を","で"],"correct":2,"explanation":"を marks the direct object of 食べます."}';
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600,
-        messages:[{role:'user',content:prompt}] })
-    });
-    var d = await resp.json();
-    if (d.error) throw new Error('API: ' + (d.error.message || d.error.type));
-    var txt = d.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
-    var q = JSON.parse(txt);
-    var letters = ['A','B','C','D'];
-    var optsHtml = '';
-    for (var i=0;i<q.options.length;i++) {
-      optsHtml += '<button class="mc-opt" data-idx="'+i+'" data-correct="'+q.correct+'" data-expl="'+encodeURIComponent(q.explanation)+'" onclick="checkGrammarMC(this)">'
-        +'<div class="mc-letter">'+letters[i]+'</div>'
-        +'<div class="mc-text" style="font-family:var(--font-jp)">'+q.options[i]+'</div>'
-        +'<div class="mc-check"></div></button>';
-    }
-    // Build translation toggle for grammar question
-    var hasEnTrans = !!(q.question_en);
-    var grammarTransRow = hasEnTrans
-      ? '<div class="hint-row" style="margin-bottom:12px">'
-        + '<button class="hint-toggle" onclick="toggleFillTranslation(this)" data-trans="' + encodeURIComponent(q.question_en) + '">Show translation &#x25be;</button>'
-        + '<div class="hint-text" id="fillTransDiv" style="font-size:12px;color:var(--muted);font-family:var(--font-ui)"></div>'
-        + '</div>'
-      : '';
-    el.innerHTML = scoreHeader()
-      + '<div class="q-label">Grammar · ' + lessonList.split(',').slice(0,3).join(', ') + '</div>'
-      + '<div class="grammar-q">' + (q.question_jp || q.question || '') + '</div>'
-      + grammarTransRow
-      + '<div class="mc-options">' + optsHtml + '</div>'
-      + '<div class="expl" id="quizExpl"></div>'
-      + '<button class="next-btn" id="nextBtn" onclick="nextCard()">Next →</button>';
-  } catch(e) {
-    el.innerHTML = '<div class="empty-state">Could not generate.<br><span style="font-size:11px;color:var(--accent)">' + (e.message||e) + '</span><br><br><button class="btn btn-primary" onclick="nextCard()">Try again &#x2192;</button></div>';
-  }
-}
-
-function checkGrammarMC(btn) {
-  if (answered) return;
-  answered = true;
-  var chosen  = parseInt(btn.getAttribute('data-idx'));
-  var correct = parseInt(btn.getAttribute('data-correct'));
-  var expl    = decodeURIComponent(btn.getAttribute('data-expl'));
-  var ok = chosen===correct;
-  if (ok) quizScore.correct++; else quizScore.wrong++;
-  document.querySelectorAll('.mc-opt').forEach(function(b,i){
-    b.classList.add('locked');
-    if (i===correct){ b.classList.add('correct'); b.querySelector('.mc-check').textContent='✓'; }
-    else if (b===btn&&!ok){ b.classList.add('wrong'); b.querySelector('.mc-check').textContent='✗'; }
-  });
-  var explEl = document.getElementById('quizExpl');
-  explEl.classList.add('show');
-  explEl.innerHTML = (ok?'<div class="ok">✓ Correct!</div>':'<div class="no">✗ Not quite.</div>') + expl;
-  document.getElementById('nextBtn').classList.add('show');
-}
-
 // ── FLASHCARD ───────────────────────────────────────────────────────────────
 function renderFlashcard() {
   var c = currentCard;
@@ -2303,183 +2041,9 @@ function handleCSV(e) {
   r.readAsText(f);
 }
 
-async function handleImage(e) {
-  var f = e.target.files[0]; if (!f) return;
-  var r = new FileReader();
-  r.onload = async function(ev) {
-    setStatus('Reading image…');
-    document.getElementById('processBtn').disabled = true;
-    try {
-      var resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000,
-          messages:[{role:'user',content:[
-            {type:'image',source:{type:'base64',media_type:f.type,data:ev.target.result.split(',')[1]}},
-            {type:'text',text:'Extract all Japanese vocabulary from this image. List each as: japanese | reading | english. One per line.'}
-          ]}] })
-      });
-      var d = await resp.json();
-      document.getElementById('pasteInput').value = d.content.map(function(c){ return c.text||''; }).join('');
-      setStatus('Image read — click Extract & Add Cards');
-    } catch(err){ setStatus('Error reading image', true); }
-    document.getElementById('processBtn').disabled = false;
-  };
-  r.readAsDataURL(f);
-}
-
-async function handlePDF(e) {
-  var f = e.target.files[0]; if (!f) return;
-  setStatus('Loading PDF…');
-  try {
-    var buf = await f.arrayBuffer();
-    pdfDoc = await pdfjsLib.getDocument({data:buf}).promise;
-    var box = document.getElementById('pdfBox');
-    box.style.display = '';
-    document.getElementById('pdfFileName').textContent = f.name + ' (' + pdfDoc.numPages + ' pages)';
-    document.getElementById('pdfFrom').value = 1;
-    document.getElementById('pdfTo').value   = Math.min(pdfDoc.numPages, 20);
-    document.getElementById('pdfTo').max     = pdfDoc.numPages;
-    document.getElementById('pdfBar').style.width = '0%';
-    document.getElementById('pdfLog').textContent  = '';
-    setStatus('PDF loaded — set page range and click Extract pages.');
-  } catch(err){ setStatus('Could not load PDF.', true); }
-}
-
-async function startPDF() {
-  if (!pdfDoc) { setStatus('Upload a PDF first.', true); return; }
-  pdfStop = false;
-  var from  = parseInt(document.getElementById('pdfFrom').value) || 1;
-  var to    = Math.min(parseInt(document.getElementById('pdfTo').value) || pdfDoc.numPages, pdfDoc.numPages);
-  var log   = document.getElementById('pdfLog');
-  var bar   = document.getElementById('pdfBar');
-  var added = 0;
-  log.textContent = '';
-
-  for (var p = from; p <= to; p++) {
-    if (pdfStop) { log.textContent += '\nStopped.'; break; }
-    bar.style.width = Math.round(((p-from)/(to-from+1))*100) + '%';
-    log.textContent = 'Reading page ' + p + '/' + to + '...';
-    try {
-      var page = await pdfDoc.getPage(p);
-      var vp   = page.getViewport({scale:1.5});
-      var cv   = document.createElement('canvas');
-      cv.width = vp.width; cv.height = vp.height;
-      await page.render({canvasContext:cv.getContext('2d'), viewport:vp}).promise;
-      var b64  = cv.toDataURL('image/jpeg', 0.85).split(',')[1];
-      var resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1200,
-          messages:[{role:'user',content:[
-            {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-            {type:'text',text:'Extract ALL Japanese vocabulary from this textbook page. Return ONLY a JSON array with no markdown. Each item: {"jp":"word","reading":"hiragana","en":"English","type":"vocab","lesson":"","example_jp":"","example_en":""}. If no vocab on this page return [].'}
-          ]}] })
-      });
-      var dj   = await resp.json();
-      var text = dj.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
-      if (text && text !== '[]') {
-        var parsed = JSON.parse(text);
-        var pa = 0;
-        for (var ii=0;ii<parsed.length;ii++) {
-          var item = parsed[ii];
-          if (!item.jp) continue;
-          if (!cards.find(function(c){ return c.jp===item.jp; })) {
-            var _nc0 = {jp:item.jp,reading:item.reading||'',en:item.en||'',type:item.type||'vocab',
-              lesson:item.lesson||'',example_jp:item.example_jp||'',example_en:item.example_en||'',
-              srs:0,nextReview:Date.now(),id:Math.random().toString(36).slice(2),customTags:[],typeOverride:''};
-            _nc0.typeOverride = classifyCard(_nc0);
-            cards.push(_nc0);
-            added++; pa++;
-          }
-        }
-        await saveCards();
-        log.textContent = 'Page ' + p + ': +' + pa + ' (' + added + ' total)';
-      } else {
-        log.textContent = 'Page ' + p + ': no vocab';
-      }
-    } catch(err) {
-      log.textContent = 'Page ' + p + ': error — ' + (err.message||err);
-    }
-    await new Promise(function(res){ setTimeout(res, 300); });
-  }
-  bar.style.width = '100%';
-  log.textContent += '\nDone! Added ' + added + ' cards.';
-  setStatus('Added ' + added + ' cards from PDF.');
-}
-
-// ── LOCAL PARSER (no API needed) ──────────────────────────────────────────
-function parseLocally(raw) {
-  var lines = raw.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
-  var results = [];
-  for (var i = 0; i < lines.length; i++) {
-    var line = lines[i];
-    var parts = null;
-    // Try pipe-separated: JP | reading | EN | lesson
-    if (line.indexOf('|') !== -1) {
-      parts = line.split('|').map(function(s){ return s.trim(); });
-      if (parts.length >= 3) {
-        results.push({jp: parts[0], reading: parts[1] || '', en: parts[2], lesson: parts[3] || ''});
-        continue;
-      }
-    }
-    // Try tab-separated
-    if (line.indexOf('\t') !== -1) {
-      parts = line.split('\t').map(function(s){ return s.trim(); });
-      if (parts.length >= 2) {
-        results.push({jp: parts[0], reading: parts.length >= 3 ? parts[1] : '', en: parts[parts.length >= 3 ? 2 : 1], lesson: parts[3] || ''});
-        continue;
-      }
-    }
-    // Try dash-separated: JP - EN  or  JP (reading) - EN
-    var dashMatch = line.match(/^(.+?)\s*(?:\(([^)]+)\))?\s*[-\u2013\u2014]\s*(.+?)(?:\s*[-\u2013\u2014]\s*(.+))?$/);
-    if (dashMatch) {
-      results.push({jp: dashMatch[1].trim(), reading: dashMatch[2] ? dashMatch[2].trim() : '', en: dashMatch[3].trim(), lesson: dashMatch[4] ? dashMatch[4].trim() : ''});
-      continue;
-    }
-    // Try comma-separated: JP, reading, EN, lesson
-    if (line.indexOf(',') !== -1) {
-      parts = line.split(',').map(function(s){ return s.trim(); });
-      if (parts.length >= 2) {
-        if (/[\u3000-\u9faf\u3040-\u309f\u30a0-\u30ff]/.test(parts[0])) {
-          results.push({jp: parts[0], reading: parts.length >= 3 ? parts[1] : '', en: parts[parts.length >= 3 ? 2 : 1], lesson: parts[3] || ''});
-          continue;
-        }
-      }
-    }
-  }
-  return results;
-}
-
-async function addManualCard() {
-  var jp = document.getElementById('manualJP').value.trim();
-  var reading = document.getElementById('manualReading').value.trim();
-  var en = document.getElementById('manualEN').value.trim();
-  var lesson = document.getElementById('manualLesson').value.trim();
-  var statusEl = document.getElementById('manualStatus');
-  if (!jp || !en) {
-    if (statusEl) { statusEl.style.color = 'var(--accent)'; statusEl.textContent = 'Need at least JP and English.'; }
-    return;
-  }
-  if (cards.find(function(c){ return c.jp === jp; })) {
-    if (statusEl) { statusEl.style.color = 'var(--accent)'; statusEl.textContent = 'Card already exists: ' + jp; }
-    return;
-  }
-  var nc = {jp: jp, reading: reading, en: en, type: 'vocab', lesson: lesson,
-    srs: 0, nextReview: Date.now(), id: Math.random().toString(36).slice(2),
-    example_jp: '', example_en: '', customTags: [], typeOverride: ''};
-  nc.typeOverride = classifyCard(nc);
-  cards.push(nc);
-  await saveCards();
-  document.getElementById('manualJP').value = '';
-  document.getElementById('manualReading').value = '';
-  document.getElementById('manualEN').value = '';
-  if (statusEl) { statusEl.style.color = 'var(--accent2)'; statusEl.textContent = '\u2713 Added: ' + jp + ' \u2014 ' + en; }
-}
-
 async function processInput() {
   var raw = document.getElementById('pasteInput').value.trim();
   if (!raw) return;
-
-  // Try local parsing first (no API needed)
   var localParsed = parseLocally(raw);
   if (localParsed.length > 0) {
     var added = 0;
@@ -2496,116 +2060,149 @@ async function processInput() {
       }
     });
     await saveCards();
-    setStatus('Added ' + added + ' card' + (added !== 1 ? 's' : '') + ' (local parse)!');
+    setStatus('Added ' + added + ' card' + (added !== 1 ? 's' : '') + '!');
     document.getElementById('pasteInput').value = '';
-    return;
+  } else {
+    setStatus('Could not parse. Use pipe format: JP | reading | EN | lesson', true);
   }
+}
 
-  // Fall back to API for freeform/natural text
-  if (!getApiKey()) {
-    setStatus('No API key set. Use pipe format (JP | reading | EN | lesson) or add your key in Settings.', true);
-    return;
+// ── RESET ──────────────────────────────────────────────────────────────────
+function showResetDialog() {
+  var overlay = document.createElement('div');
+  overlay.id = 'resetModal';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML =
+    '<div style="background:var(--card);border-radius:14px;padding:24px;max-width:420px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">'
+    + '<div style="font-size:17px;font-weight:500;margin-bottom:8px;color:var(--accent)">\u26A0 Reset to defaults</div>'
+    + '<div style="font-size:14px;color:var(--ink);line-height:1.7;margin-bottom:16px">'
+    + 'This will <b>permanently delete</b> all your current cards and replace them with the original ' + SEED.length + ' MNN seed cards.<br><br>'
+    + '<b>You will lose:</b>'
+    + '<div style="margin:8px 0;padding:8px 12px;background:#fdecea;border-radius:8px;font-size:13px;color:#c62828">'
+    + '\u2022 All SRS progress (levels, review dates)<br>'
+    + '\u2022 All custom tags and type overrides<br>'
+    + '\u2022 Any cards you added manually<br>'
+    + '\u2022 Any edits to existing cards'
+    + '</div>'
+    + 'This cannot be undone.</div>'
+    + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+    + '<button class="btn btn-secondary" onclick="document.getElementById(\'resetModal\').remove()">Cancel</button>'
+    + '<button class="btn" style="background:#c62828;color:#fff" onclick="doReset()">Reset everything</button>'
+    + '</div>'
+    + '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">'
+    + '<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer">'
+    + '<input type="checkbox" id="resetSheetToo"> Also clear the linked Google Sheet'
+    + '</label></div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+}
+
+async function doReset() {
+  var resetSheet = document.getElementById('resetSheetToo') && document.getElementById('resetSheetToo').checked;
+  cards = SEED.map(function(s) {
+    return { jp:s.jp, reading:s.r, en:s.en, type:'vocab', lesson:s.l,
+             srs:0, nextReview:Date.now(), id:Math.random().toString(36).slice(2),
+             example_jp:'', example_en:'', customTags:[], typeOverride:'' };
+  });
+  await saveCards();
+  customTagsList = [];
+  if (resetSheet && gsAccessToken && gsSheetId) {
+    try { await syncToSheets(); } catch(e) {}
   }
-  setStatus('Claude is parsing\u2026');
-  document.getElementById('processBtn').disabled = true;
+  document.getElementById('resetModal').remove();
+  alert('Reset complete. ' + cards.length + ' seed cards loaded.');
+  renderList();
+  renderStats();
+}
+
+// ── PULL FROM SHEETS ──────────────────────────────────────────────────────
+async function pullFromSheets() {
+  if (!gsAccessToken) { openGoogleSheets(); return; }
+  if (!gsSheetId) { alert('No sheet linked. Push first to create one.'); return; }
   try {
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST', headers:{'Content-Type':'application/json', 'x-api-key': getApiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000,
-        messages:[{role:'user',content:'Parse this Japanese study material and return ONLY a JSON array with no markdown. Each: {"jp":"word","reading":"hiragana","en":"English","type":"vocab","lesson":"","example_jp":"","example_en":""}. Input:\n' + raw}] })
+    var resp = await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+gsSheetId+'/values/Cards!A1:I10000', {
+      headers:{'Authorization':'Bearer '+gsAccessToken}
     });
-    var d    = await resp.json();
-    var text = d.content.map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
-    var parsed = JSON.parse(text);
-    var added = 0;
-    parsed.forEach(function(item){
-      if (!item.jp) return;
-      if (!cards.find(function(c){ return c.jp===item.jp; })) {
-        var _nc1 = {jp:item.jp,reading:item.reading||'',en:item.en||'',type:item.type||'vocab',
-          lesson:item.lesson||'',example_jp:item.example_jp||'',example_en:item.example_en||'',
-          srs:0,nextReview:Date.now(),id:Math.random().toString(36).slice(2),customTags:[],typeOverride:''};
-        _nc1.typeOverride = classifyCard(_nc1);
-        cards.push(_nc1);
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    var rows = data.values;
+    if (!rows || rows.length < 2) { alert('Sheet is empty or has no data rows.'); return; }
+    var header = rows[0];
+    var jpIdx = header.indexOf('JP');
+    var rIdx  = header.indexOf('Reading');
+    var enIdx = header.indexOf('English');
+    var lIdx  = header.indexOf('Lesson');
+    var tIdx  = header.indexOf('Type');
+    var ctIdx = header.indexOf('Custom Tags');
+    var sIdx  = header.indexOf('SRS');
+    var nrIdx = header.indexOf('Next Review');
+    var idIdx = header.indexOf('Card ID');
+    if (jpIdx === -1 || enIdx === -1) { alert('Sheet missing JP or English columns.'); return; }
+    var byId = {};
+    var byJp = {};
+    cards.forEach(function(c) { if(c.id) byId[c.id] = c; byJp[c.jp] = c; });
+    var updated = 0, added = 0;
+    var sheetIds = new Set();
+    for (var i = 1; i < rows.length; i++) {
+      var row = rows[i];
+      var jp = (row[jpIdx]||'').trim();
+      if (!jp) continue;
+      var id = idIdx !== -1 ? (row[idIdx]||'').trim() : '';
+      sheetIds.add(id || jp);
+      var existing = (id && byId[id]) || byJp[jp];
+      if (existing) {
+        var changed = false;
+        if (rIdx !== -1 && row[rIdx] !== undefined && row[rIdx] !== existing.reading) { existing.reading = row[rIdx]; changed = true; }
+        if (enIdx !== -1 && row[enIdx] !== undefined && row[enIdx] !== existing.en) { existing.en = row[enIdx]; changed = true; }
+        if (lIdx !== -1 && row[lIdx] !== undefined && row[lIdx] !== existing.lesson) { existing.lesson = row[lIdx]; changed = true; }
+        if (tIdx !== -1 && row[tIdx] !== undefined && row[tIdx] !== existing.typeOverride) { existing.typeOverride = row[tIdx]; changed = true; }
+        if (ctIdx !== -1 && row[ctIdx] !== undefined) {
+          var newTags = row[ctIdx] ? row[ctIdx].split('|').filter(Boolean) : [];
+          if (JSON.stringify(newTags) !== JSON.stringify(existing.customTags||[])) { existing.customTags = newTags; changed = true; }
+        }
+        if (sIdx !== -1 && row[sIdx] !== undefined) { var ns = parseInt(row[sIdx])||0; if(ns !== existing.srs) { existing.srs = ns; changed = true; } }
+        if (changed) updated++;
+      } else {
+        var nc = {jp: jp, reading: rIdx!==-1?(row[rIdx]||''):'', en: row[enIdx]||'', type:'vocab',
+          lesson: lIdx!==-1?(row[lIdx]||''):'', example_jp:'', example_en:'',
+          srs: sIdx!==-1?(parseInt(row[sIdx])||0):0,
+          nextReview: nrIdx!==-1&&row[nrIdx] ? new Date(row[nrIdx]).getTime() : Date.now(),
+          id: id || Math.random().toString(36).slice(2),
+          customTags: ctIdx!==-1&&row[ctIdx] ? row[ctIdx].split('|').filter(Boolean) : [],
+          typeOverride: tIdx!==-1?(row[tIdx]||''):''};
+        cards.push(nc);
         added++;
       }
+    }
+    var removed = 0;
+    cards = cards.filter(function(c) {
+      var keep = sheetIds.has(c.id) || sheetIds.has(c.jp);
+      if (!keep) removed++;
+      return keep;
     });
     await saveCards();
-    setStatus('Added ' + added + ' card' + (added!==1?'s':'') + '!');
-    document.getElementById('pasteInput').value = '';
-  } catch(err){ setStatus('Parse error \u2014 try pipe format (JP | reading | EN) or check API key.', true); }
-  document.getElementById('processBtn').disabled = false;
+    var tagSet = new Set();
+    cards.forEach(function(c){ (c.customTags||[]).forEach(function(t){ tagSet.add(t); }); });
+    customTagsList = Array.from(tagSet).sort();
+    alert('Pull complete!\n\u2022 Updated: ' + updated + '\n\u2022 Added: ' + added + '\n\u2022 Removed: ' + removed + '\n\u2022 Total: ' + cards.length + ' cards');
+    renderList();
+    renderStats();
+  } catch(err) {
+    if (err.message && err.message.indexOf('401') !== -1) { gsAccessToken = ''; initGoogleAuth(); }
+    else alert('Pull error: ' + (err.message || err));
+  }
 }
 
 // ── BOOT ────────────────────────────────────────────────────────────────────
-var _apiKey = '';
-
-function getApiKey() {
-  if (_apiKey) return _apiKey;
-  // Try localStorage fallback
-  return localStorage.getItem('goichou-apikey') || '';
-}
-
-async function loadApiKey() {
-  try {
-    var r = await sGet('goichou-apikey');
-    if (r && r.value) { _apiKey = r.value; }
-    else { var lk = localStorage.getItem('goichou-apikey'); if(lk) _apiKey = lk; }
-  } catch(e) { var lk = localStorage.getItem('goichou-apikey'); if(lk) _apiKey = lk; }
-}
-
-async function saveApiKey() {
-  var inp = document.getElementById('apiKeyInput');
-  if (!inp) return;
-  var key = inp.value.trim();
-  if (!key) return;
-  _apiKey = key;
-  localStorage.setItem('goichou-apikey', key);
-  try { await sSet('goichou-apikey', key); } catch(e) {}
-  inp.type = 'password';
-  var st = document.getElementById('apiKeyStatus');
-  if (st) { st.style.display=''; st.style.color='var(--accent2)'; st.textContent = '✓ API key saved!'; setTimeout(function(){ st.style.display='none'; }, 2000); }
-}
-
-async function testApiKey() {
-  var key = getApiKey();
-  var st = document.getElementById('apiKeyStatus');
-  if (!key) {
-    if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent = '✗ No API key saved. Enter one and click Save first.'; }
-    return;
-  }
-  if (st) { st.style.display=''; st.style.color='var(--muted)'; st.textContent = 'Testing…'; }
-  try {
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json', 'x-api-key': key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:20, messages:[{role:'user',content:'Say OK'}] })
-    });
-    var d = await resp.json();
-    if (d.error) {
-      if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent = '✗ API error: ' + (d.error.message || d.error.type || JSON.stringify(d.error)); }
-    } else if (d.content) {
-      if (st) { st.style.display=''; st.style.color='var(--accent2)'; st.textContent = '✓ API key works! Response: ' + (d.content[0].text||'').slice(0,30); }
-    } else {
-      if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent = '✗ Unexpected response: ' + JSON.stringify(d).slice(0,80); }
-    }
-  } catch(e) {
-    if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent = '✗ Network error: ' + e.message; }
-  }
-}
-
 function loadSettingsUI() {
-  // Populate API key field (masked)
-  var inp = document.getElementById('apiKeyInput');
-  if (inp && _apiKey) { inp.value = _apiKey; }
-  // Populate GS fields
   var ci = document.getElementById('gsClientIdInput');
   var si = document.getElementById('gsSheetIdInput');
   if (ci && GS_CLIENT_ID) ci.value = GS_CLIENT_ID;
   if (si && gsSheetId)    si.value = gsSheetId;
-  // Show sync button if connected
   var sb = document.getElementById('gsSyncBtn');
+  var pb = document.getElementById('gsPullBtn');
   if (sb) sb.style.display = gsAccessToken ? '' : 'none';
-  // Sync showKanji buttons
+  if (pb) pb.style.display = gsAccessToken ? '' : 'none';
   var stnK = document.getElementById('stnKanji');
   var stnH = document.getElementById('stnHira');
   if (stnK) { stnK.style.background = showKanji ? 'var(--accent)' : 'var(--hover)'; stnK.style.color = showKanji ? '#fff' : 'var(--muted)'; }
@@ -2622,13 +2219,12 @@ function saveGSSettings() {
     if (st) { st.style.display=''; st.style.color='var(--accent)'; st.textContent='Please enter a Client ID.'; }
     return;
   }
-  if (st) { st.style.display=''; st.style.color='var(--muted)'; st.textContent='Connecting…'; }
+  if (st) { st.style.display=''; st.style.color='var(--muted)'; st.textContent='Connecting\u2026'; }
   try { sSet('gs-client-id', GS_CLIENT_ID); } catch(e){}
   initGoogleAuth();
 }
 
 loadCards();
-loadApiKey();
 loadGSState();
 </script>
 </body>
